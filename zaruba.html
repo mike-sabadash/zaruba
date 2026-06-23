@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>Zaruba — Заруба</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Inter, system-ui, sans-serif;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url("assets/local/map-bg.png") center/cover no-repeat;
+      filter: brightness(0.6) contrast(1.1);
+      z-index: 0;
+      pointer-events: none;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .page {
+      position: relative;
+      z-index: 2;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 0 20px 0;
+    }
+    .profile {
+      display: inline-flex;
+      align-items: center;
+      gap: 20px;
+      min-width: 0;
+    }
+    .avatar {
+      width: 39px;
+      height: 39px;
+      border-radius: 999px;
+      background: #111 url("assets/local/avatar.png") center/cover no-repeat;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      flex-shrink: 0;
+    }
+    .name {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.9);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .top-logo {
+      width: 146px;
+      height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      justify-self: center;
+      background: url("assets/local/logo-full.png") center/contain no-repeat;
+    }
+    .actions {
+      justify-self: end;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .heart {
+      width: 22px;
+      height: 22px;
+      background: url("assets/local/icon-heart.png") center/contain no-repeat;
+    }
+    .bell-wrap {
+      position: relative;
+      width: 25px;
+      height: 25px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bell-svg {
+      width: 25px;
+      height: 25px;
+      display: block;
+      color: rgba(255, 255, 255, 0.92);
+    }
+    .bell-num {
+      position: absolute;
+      top: -7px;
+      right: -9px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: #f10973;
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 16px;
+      text-align: center;
+      color: #fff;
+      border: 1px solid rgba(0,0,0,0.35);
+    }
+    .footer {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 20px 0;
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 40px;
+    }
+    .content-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .card {
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .team-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .team-card h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .team-card p {
+      font-size: 0.85rem;
+      color: #ccc;
+      margin-bottom: 8px;
+    }
+    .member-list {
+      list-style: none;
+      margin-top: 16px;
+    }
+    .member-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn {
+      background: #f20b88;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 40px;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #f20b88;
+      color: #f20b88;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    .score {
+      font-size: 48px;
+      font-weight: bold;
+      text-align: center;
+      font-family: monospace;
+    }
+    .status-badge {
+      display: inline-block;
+      background: #f20b88;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: black;
+      font-weight: bold;
+    }
+    .chat-box {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .chat-message {
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .chat-input {
+      display: flex;
+      gap: 8px;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 40px;
+      border: none;
+      background: #222;
+      color: white;
+    }
+    @media (max-width: 800px) {
+      .two-columns { grid-template-columns: 1fr; }
+      .header { grid-template-columns: 1fr auto 1fr; gap: 8px; padding: 12px 0; }
+      .top-logo { width: 100px; height: 36px; }
+      .score { font-size: 32px; }
+      .card { padding: 16px; }
+      .team-card { padding: 16px; }
+      .team-card h3 { font-size: 1.25rem; }
+      .chat-input { flex-direction: column; }
+      .chat-input input { min-height: 44px; }
+      .btn { min-height: 44px; padding: 10px 16px; font-size: 13px; }
+      .btn-sm { min-height: 36px; padding: 8px 12px; font-size: 12px; }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <header class="header">
+    <div class="profile">
+      <span class="avatar" aria-hidden="true"></span>
+      <span class="name" id="headerUserName">Загрузка...</span>
+    </div>
+    <div class="top-logo" aria-label="Zaruba"></div>
+    <div class="actions">
+      <span class="heart" aria-hidden="true"></span>
+      <span class="bell-wrap">
+        <svg class="bell-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <path d="M15.6 17.8H8.4c-1.7 0-2.7 0-3.1-.5-.5-.6-.2-1.4.3-2.9l.4-1.1c.3-.8.5-1.4.5-2.3 0-2.8 2.2-5 5-5s5 2.2 5 5c0 .9.2 1.5.5 2.3l.4 1.1c.5 1.5.8 2.3.3 2.9-.4.5-1.4.5-3.1.5Z"/>
+          <path d="M10 20a2 2 0 0 0 4 0"/>
+        </svg>
+        <span class="bell-num">2</span>
+      </span>
+    </div>
+  </header>
+
+  <div id="zaruba-root" class="content-grid">
+    <div class="card" style="text-align:center">Загрузка...</div>
+  </div>
+
+  <footer class="footer">
+    <div>DVOR NA DVOR — уличная спортивная платформа</div>
+  </footer>
+</div>
+
+<script src="js/constants.js"></script>
+<script src="js/api-client.js"></script>
+<script src="js/session.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/gamify.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/zaruba-detail.js"></script>
+<script>
+  zarubaInitTheme();
+  var uid = ZarubaSession.get();
+  if (uid) {
+    mockDb.getUser(uid).then(function (u) {
+      if (u) document.getElementById('headerUserName').innerText = u.nickname;
+    });
+  }
+  zarubaDetailInit();
+</script>
+</body>
+</html>

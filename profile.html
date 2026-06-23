@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" />
+  <title>Профиль — Заруба</title>
+  <link rel="stylesheet" href="css/zaruba-vibes.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class" };</script>
+</head>
+<body class="zb-page-bg min-h-dvh bg-zinc-100 zb-main-pad text-zinc-900 dark:bg-[#09090b] dark:text-white">
+  <div id="zaruba-header"></div>
+  <main class="zb-page-main mx-auto max-w-2xl px-5 py-8 sm:px-6 sm:py-10" id="profile-root"></main>
+  <div id="zaruba-bottom-nav"></div>
+
+  <script src="js/constants.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/gamify.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/profile.js"></script>
+  <script>zarubaProfileInit();</script>
+</body>
+</html>

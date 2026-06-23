@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" />
+  <title>Инвайт — Заруба</title>
+  <link rel="stylesheet" href="css/zaruba-vibes.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class" };</script>
+</head>
+<body class="zb-page-bg flex min-h-dvh flex-col items-center justify-center bg-zinc-100 px-4 py-10 text-zinc-900 dark:bg-[#09090b] dark:text-white">
+  <div class="zb-glass zb-shine relative w-full max-w-md overflow-hidden rounded-3xl p-8" id="inv-root"></div>
+  <a href="index.html" class="mt-8 text-sm font-bold text-zb-accent">← На главную</a>
+
+  <script src="js/constants.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/gamify.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    zarubaInitTheme();
+    var q = zarubaQs();
+
+    Promise.all([
+      mockDb.getTeam(q.teamId),
+      mockDb.getZaruba(q.zarubaId),
+    ]).then(function (results) {
+      var team = results[0], z = results[1];
+      var mismatch = team && team.zarubaId !== q.zarubaId;
+
+      function renderCaptain(cap) {
+        document.getElementById("inv-root").innerHTML =
+          '<div class="text-5xl">👟</div>' +
+          '<h1 class="font-zb-display mt-4 text-4xl font-bold">В команду</h1>' +
+          '<p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">' +
+          (team ? '<span class="font-bold text-zinc-900 dark:text-white">' + team.name + "</span>" : "Команда") +
+          (cap ? " · капитан <span class=\"text-zb-accent\">" + cap.nickname + "</span>" : "") +
+          "</p>" +
+          (mismatch
+            ? '<p class="mt-4 font-semibold text-red-500">Ссылка битая или устарела.</p>'
+            : '<div id="inv-act" class="mt-8"></div>');
+
+        if (!mismatch) {
+          var uid = ZarubaSession.get();
+          var act = document.getElementById("inv-act");
+          if (act) {
+            if (!uid) {
+              act.innerHTML = '<a href="login.html" class="zb-tap zb-btn-cta">Войти и вступить</a>';
+            } else {
+              act.innerHTML = '<button type="button" id="inv-join" class="zb-tap zb-btn-cta shadow-zb">Залетаю в состав</button>';
+              document.getElementById("inv-join").onclick = function () {
+                mockDb.joinTeam(q.teamId, uid).then(function () {
+                  if (typeof zarubaToast === "function") zarubaToast("Заявка отправлена капитану!", "info", 2600);
+                  window.location.href = "zaruba.html?id=" + encodeURIComponent(q.zarubaId);
+                });
+              };
+            }
+          }
+        }
+      }
+
+      if (team) {
+        mockDb.getUser(team.captainId).then(function (cap) { renderCaptain(cap); });
+      } else {
+        renderCaptain(null);
+      }
+    });
+  </script>
+</body>
+</html>

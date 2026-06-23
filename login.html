@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" />
+  <title>Вход — Заруба</title>
+  <link rel="stylesheet" href="css/zaruba-vibes.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class" };</script>
+</head>
+<body class="zb-page-bg flex min-h-dvh flex-col bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-white">
+  <div id="zaruba-header"></div>
+  <div class="flex flex-1 flex-col items-center justify-center p-4">
+    <div class="zb-glass zb-shine relative w-full max-w-md overflow-hidden rounded-3xl p-8">
+      <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-orange-500/15 blur-3xl"></div>
+      <h1 class="font-zb-display relative text-5xl font-bold tracking-tight text-zinc-900 dark:text-white">Вход</h1>
+      <p class="relative mt-2 text-sm text-zinc-600 dark:text-zinc-400">Мок-SMS: код <strong class="text-zb-accent" id="mock-code"></strong></p>
+
+      <div id="step-phone" class="relative mt-8 space-y-4">
+        <label class="block text-sm font-bold text-zinc-700 dark:text-zinc-200">Телефон
+          <input id="phone" type="tel" class="zb-tap mt-2 w-full rounded-2xl border border-black/15 bg-white px-4 py-3 dark:border-white/10 dark:bg-black/40 dark:text-white" placeholder="+7 900 000-00-00" />
+        </label>
+        <button type="button" id="btn-send" class="zb-tap zb-btn-cta shadow-zb">Получить код</button>
+      </div>
+
+      <div id="step-code" class="relative mt-8 hidden space-y-4">
+        <label class="block text-sm font-bold">Код из SMS
+          <input id="code" type="text" inputmode="numeric" class="zb-tap mt-2 w-full rounded-2xl border border-black/15 px-4 py-3 dark:border-white/10 dark:bg-black/40 dark:text-white" />
+        </label>
+        <button type="button" id="btn-verify" class="zb-tap zb-btn-cta">Войти</button>
+        <button type="button" id="btn-back-phone" class="text-sm font-semibold text-zinc-500 underline">Изменить номер</button>
+      </div>
+
+      <div id="step-nick" class="relative mt-8 hidden space-y-4">
+        <label class="block text-sm font-bold">Ник на районе
+          <input id="nickname" type="text" class="zb-tap mt-2 w-full rounded-2xl border border-black/15 px-4 py-3 dark:border-white/10 dark:bg-black/40 dark:text-white" placeholder="Например, Дворовый10" />
+        </label>
+        <button type="button" id="btn-register" class="zb-tap zb-btn-cta">Создать профиль</button>
+      </div>
+
+      <p id="login-err" class="relative mt-4 hidden text-sm font-semibold text-red-400" role="alert"></p>
+    </div>
+    <a href="index.html" class="mt-6 text-sm font-bold text-zb-accent">← На главную</a>
+  </div>
+
+  <script src="js/constants.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/gamify.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    zarubaInitTheme();
+    zarubaRenderHeader();
+    document.getElementById("mock-code").textContent = ZARUBA_MOCK_SMS_CODE;
+
+    var _phone = '';
+    var _existingUser = null;
+
+    function showErr(msg) {
+      var e = document.getElementById("login-err");
+      e.textContent = msg || "";
+      e.classList.toggle("hidden", !msg);
+    }
+
+    function normPhone() {
+      return document.getElementById("phone").value.replace(/\D/g, "");
+    }
+
+    document.getElementById("btn-send").onclick = function () {
+      showErr("");
+      if (normPhone().length < 10) {
+        showErr("Введите корректный номер");
+        return;
+      }
+      _phone = normPhone();
+      document.getElementById("step-phone").classList.add("hidden");
+      document.getElementById("step-code").classList.remove("hidden");
+    };
+
+    document.getElementById("btn-back-phone").onclick = function () {
+      document.getElementById("step-code").classList.add("hidden");
+      document.getElementById("step-phone").classList.remove("hidden");
+      showErr("");
+    };
+
+    document.getElementById("btn-verify").onclick = function () {
+      showErr("");
+      var code = document.getElementById("code").value.trim();
+      if (code !== ZARUBA_MOCK_SMS_CODE) {
+        showErr("Неверный код. Для MVP: " + ZARUBA_MOCK_SMS_CODE);
+        return;
+      }
+      mockDb.findUserByPhone(_phone).then(function (existing) {
+        _existingUser = existing;
+        if (existing) {
+          ZarubaSession.set(existing.id);
+          window.location.href = existing.onboardingDone ? "index.html" : "onboarding.html";
+          return;
+        }
+        document.getElementById("step-code").classList.add("hidden");
+        document.getElementById("step-nick").classList.remove("hidden");
+      });
+    };
+
+    // Capture referral code from URL
+    var urlParams = new URLSearchParams(window.location.search);
+    var _referralCode = urlParams.get('ref') || null;
+
+    document.getElementById("btn-register").onclick = function () {
+      showErr("");
+      var nick = document.getElementById("nickname").value.trim();
+      if (nick.length < 2) {
+        showErr("Ник от 2 символов");
+        return;
+      }
+      mockDb.createUser(_phone, nick, _referralCode).then(function (u) {
+        ZarubaSession.set(u.id);
+        window.location.href = "onboarding.html";
+      });
+    };
+  </script>
+</body>
+</html>

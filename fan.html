@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" />
+  <title>Фанат — Заруба</title>
+  <link rel="stylesheet" href="css/zaruba-vibes.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class" };</script>
+</head>
+<body class="zb-page-bg flex min-h-dvh flex-col items-center justify-center bg-[#09090b] px-4 py-10 text-white">
+  <div class="zb-glass zb-shine relative w-full max-w-md overflow-hidden rounded-3xl p-8" id="fan-root">
+    <div class="absolute -left-8 bottom-0 h-32 w-32 rounded-full bg-violet-500/20 blur-2xl"></div>
+  </div>
+  <a href="index.html" class="mt-8 text-sm font-bold text-zb-accent">← На главную</a>
+
+  <script src="js/constants.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/gamify.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    zarubaInitTheme();
+    var q = zarubaQs();
+    var zarubaId = q.zarubaId;
+    var playerId = q.playerId;
+    var root = document.getElementById("fan-root");
+
+    Promise.all([
+      mockDb.getZaruba(zarubaId),
+      mockDb.getUser(playerId),
+    ]).then(function (results) {
+      var z = results[0], pl = results[1];
+      var sport = z ? zarubaSportLabel(z.sport) : "";
+
+      root.innerHTML =
+        '<div class="relative text-5xl">📣</div>' +
+        '<h1 class="font-zb-display relative mt-4 text-4xl font-bold leading-tight">В тусовку!</h1>' +
+        '<p class="relative mt-2 text-sm text-zinc-400">Болеешь за <strong class="text-lg text-zb-accent">' +
+        (pl ? pl.nickname : "игрока") +
+        "</strong>" +
+        (z ? " · " + sport : "") +
+        "</p>" +
+        (z && z.description
+          ? '<p class="relative mt-2 rounded-xl bg-black/20 px-3 py-2 text-xs text-zinc-400">' + z.description.slice(0, 120) + (z.description.length > 120 ? "…" : "") + "</p>"
+          : "") +
+        '<div id="fan-action" class="relative mt-8"></div>' +
+        '<p id="fan-err" class="relative mt-3 hidden text-center text-sm font-semibold text-red-400" role="alert"></p>';
+
+      var uid = ZarubaSession.get();
+      var act = document.getElementById("fan-action");
+      if (!uid) {
+        act.innerHTML = '<a href="login.html" class="zb-tap zb-btn-cta shadow-zb">Войти и болеть</a>';
+      } else {
+        act.innerHTML = '<button type="button" id="fan-go" class="zb-tap zb-btn-cta shadow-zb">Я в тусовке!</button>';
+        document.getElementById("fan-go").onclick = function () {
+          var er = document.getElementById("fan-err");
+          er.classList.add("hidden");
+          mockDb.bindFan({ zarubaId: zarubaId, playerId: playerId, fanUserId: uid }).then(function () {
+            if (typeof zarubaToast === "function") zarubaToast("Ты в болельщиках! 🔥", "win", 2200);
+            if (typeof zarubaCelebrate === "function") zarubaCelebrate();
+            window.setTimeout(function () { window.location.href = "zaruba.html?id=" + encodeURIComponent(zarubaId); }, 500);
+          }).catch(function (e) {
+            er.textContent = e.message;
+            er.classList.remove("hidden");
+          });
+        };
+      }
+    });
+  </script>
+</body>
+</html>

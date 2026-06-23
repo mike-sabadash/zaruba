@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>Zaruba</title>
+  <style>
+    :root { --w: 1440; --h: 1024; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Inter, system-ui, sans-serif;
+    }
+    .page {
+      position: relative;
+      isolation: isolate;
+      width: 100%;
+      min-height: 100svh;
+      background:
+        linear-gradient(0deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.62)),
+        url("assets/local/map-bg.png") center center/cover no-repeat,
+        #000;
+      display: flex;
+      flex-direction: column;
+    }
+    .page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: #ff0a8a;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 60;
+      will-change: opacity;
+      transition: opacity 0.06s linear;
+    }
+    .page.is-cta-hover::before {
+      opacity: 1;
+    }
+    .page.is-cta-hover .hero { z-index: 90; }
+    .page.is-cta-hover .center { z-index: 90; }
+    .hero {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      min-height: 760px;
+      background: transparent;
+      overflow: hidden;
+    }
+    .center {
+      position: relative;
+      text-align: center;
+      z-index: 2;
+      padding-top: 0;
+      transition: transform 0.22s ease, opacity 0.2s ease;
+    }
+    .top-logo {
+      width: 146px;
+      height: 52px;
+      margin: 0 auto 0;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: url("assets/local/logo-full.png") center/contain no-repeat;
+    }
+    .top-logo-mark {
+      display: none;
+    }
+    .brand { display: none; }
+    h1 {
+      margin: 76px auto 0;
+      max-width: 740px;
+      font-family: "Batman Forever Alternate Cyr", "Bebas Neue", sans-serif;
+      font-size: 64px;
+      line-height: 1.075;
+      letter-spacing: 0.01em;
+      font-weight: 400;
+      text-transform: none;
+      color: rgba(255, 255, 255, 0.85);
+      text-align: center;
+      position: relative;
+      z-index: 75;
+      transform-origin: center center;
+      transition: color 0.2s ease, transform 0.22s ease, text-shadow 0.2s ease;
+    }
+    .page.is-cta-hover h1 {
+      color: #050505;
+      transform: scale(1.08);
+      text-shadow:
+        0 0 10px rgba(255, 255, 255, 0.18),
+        0 0 18px rgba(0, 0, 0, 0.22);
+      animation: slogan-threat 150ms steps(2, jump-none) infinite;
+    }
+    .subtitle {
+      margin: 32px auto 0;
+      max-width: 954px;
+      font-family: Inter, system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.48;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.3);
+    }
+    .cta {
+      margin: 88px auto 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 245px;
+      height: 63.45px;
+      border: 1px solid #ba1350;
+      border-radius: 4px;
+      color: #ffffff;
+      background: #ba1350;
+      font-family: Inter, system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      text-decoration: none;
+      position: relative;
+      z-index: 75;
+      transform-origin: center center;
+      transition:
+        color 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.22s ease;
+    }
+    .cta:hover {
+      color: #000000;
+      border-color: #ffffff;
+      background: #ffffff;
+      box-shadow: none;
+    }
+    .page.is-cta-hover .cta {
+      transform: scale(1.08);
+      color: #000;
+      border-color: #fff;
+      background: #fff;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.08),
+        0 10px 28px rgba(0, 0, 0, 0.24);
+      animation: cta-threat 220ms cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+    }
+    .cta:active {
+      color: #111111;
+      border-color: #ffffff;
+      background: #f2f2f2;
+    }
+    .geo {
+      margin: 20px auto 0;
+      width: 245px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: rgba(122, 122, 122, 0.6);
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      text-align: left;
+    }
+    .geo-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .geo-box {
+      width: 23px;
+      height: 22px;
+      border: 1px solid rgba(148, 148, 148, 0.38);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.003);
+      transition:
+        border-color .16s ease,
+        background-color .16s ease,
+        box-shadow .16s ease,
+        transform .12s ease;
+    }
+    .geo-box::after {
+      content: "";
+      width: 8px;
+      height: 5px;
+      border-left: 1.5px solid rgba(196, 196, 196, 0.42);
+      border-bottom: 1.5px solid rgba(196, 196, 196, 0.42);
+      transform: rotate(-45deg) translateY(-1px) scale(.88);
+      background: transparent;
+      opacity: 0;
+      transition: opacity .14s ease, transform .14s ease, border-color .14s ease;
+    }
+    .geo:hover .geo-box {
+      border-color: rgba(171, 171, 171, 0.54);
+      background: rgba(255, 255, 255, 0.012);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+    }
+    .geo-input:checked + .geo-box::after {
+      opacity: 0.8;
+      border-color: rgba(245, 245, 245, 0.54);
+      transform: rotate(-45deg) translateY(-1px) scale(1);
+    }
+    .geo-input:checked + .geo-box {
+      border-color: rgba(228, 228, 228, 0.42);
+      background: rgba(255,255,255,0.064);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
+    }
+    .geo-input:focus-visible + .geo-box {
+      outline: 1px solid rgba(186,19,80,0.55);
+      outline-offset: 2px;
+    }
+    .geo-input:active + .geo-box {
+      transform: scale(0.96);
+    }
+    .band-strip {
+      position: relative;
+      width: 100%;
+      margin-top: 58px;
+      height: clamp(140px, 18vw, 184px);
+      background: #000;
+      overflow: hidden;
+    }
+    .band-photo {
+      position: absolute;
+      left: -3.57%;
+      width: 107.43%;
+      top: -40%;
+      height: 180%;
+      background: url("assets/local/band-photo.png") center center/cover no-repeat;
+      opacity: 0.95;
+      transform: translate3d(0, var(--band-shift, 0px), 0);
+      will-change: transform;
+    }
+    .footer-wrap {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 57px;
+    }
+    .footer-bg {
+      position: absolute;
+      left: 0; right: 0;
+      top: 0;
+      height: 57px;
+      background: #000;
+    }
+    .footer {
+      position: relative;
+      z-index: 3;
+      height: 57px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      letter-spacing: 0.07em;
+      font-size: 12px;
+      font-family: "Bebas Neue", sans-serif;
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+    @keyframes slogan-threat {
+      0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+      16% { transform: translate3d(-1.5px, 1.1px, 0) rotate(-0.24deg); }
+      32% { transform: translate3d(1.7px, -1.2px, 0) rotate(0.22deg); }
+      48% { transform: translate3d(-1.2px, 0.9px, 0) rotate(-0.18deg); }
+      64% { transform: translate3d(1.1px, -0.9px, 0) rotate(0.16deg); }
+      82% { transform: translate3d(-0.8px, 0.55px, 0) rotate(-0.11deg); }
+      100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+    }
+    .world-fx {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 73;
+      overflow: hidden;
+    }
+    .world-fx-particle {
+      position: absolute;
+      left: 0;
+      top: 0;
+      border-radius: 999px;
+      pointer-events: none;
+      will-change: transform, opacity, filter;
+    }
+    .page.is-cta-hover .top-logo,
+    .page.is-cta-hover .subtitle,
+    .page.is-cta-hover .geo,
+    .page.is-cta-hover .band-strip,
+    .page.is-cta-hover .footer-wrap {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.18s ease, visibility 0.18s ease;
+    }
+    .page.is-cta-hover h1 { z-index: 80; }
+    .page.is-cta-hover .cta { z-index: 80; }
+    @keyframes cta-threat {
+      0% { transform: scale(1.08) translate3d(0, 0, 0); }
+      22% { transform: scale(1.095) translate3d(-0.8px, 0.5px, 0); }
+      44% { transform: scale(1.1) translate3d(0.9px, -0.6px, 0); }
+      66% { transform: scale(1.09) translate3d(-0.5px, 0.35px, 0); }
+      100% { transform: scale(1.08) translate3d(0, 0, 0); }
+    }
+    @media (max-width: 860px) {
+      .hero { min-height: 700px; }
+      .center { padding-top: 0; }
+      h1 { margin-top: 64px; font-size: 44px; letter-spacing: 0.01em; }
+      .subtitle { margin-top: 30px; font-size: 14px; padding: 0 20px; }
+      .cta { margin-top: 68px; }
+      .geo { width: 245px; font-size: 10px; gap: 12px; }
+      .band-strip { margin-top: 46px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="world-fx" aria-hidden="true"></div>
+  <div class="page">
+    <section class="hero">
+      <section class="center">
+        <div class="top-logo">
+          <div class="top-logo-mark"></div>
+          <p class="brand">Za<span>ruba</span></p>
+        </div>
+        <h1>На темной<br />стороне дворов</h1>
+        <p class="subtitle">Собирай банды и зарубайся дворами и районами</p>
+        <a class="cta" href="arena.html">Войти в даркспорт</a>
+        <label class="geo">
+        <input class="geo-input" type="checkbox" id="geo-prefer" checked />
+        <span class="geo-box" aria-hidden="true"></span>
+          <span>Использовать мою геолокацию<br />(рекоммендуется)</span>
+        </label>
+      </section>
+      <div class="band-strip">
+        <div class="band-photo"></div>
+      </div>
+    </section>
+    <div class="footer-wrap">
+      <div class="footer-bg"></div>
+      <footer class="footer">
+        <div>DVOR NA DVOR</div>
+      </footer>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var page = document.querySelector(".page");
+      var cta = document.querySelector(".cta");
+      var title = document.querySelector("h1");
+      var fx = document.querySelector(".world-fx");
+      var fxRaf = null;
+      var fxActive = false;
+      var particles = [];
+
+      function rand(min, max) { return Math.random() * (max - min) + min; }
+      function updateBandParallax() {
+        var strip = document.querySelector(".band-strip");
+        if (!strip) return;
+        var rect = strip.getBoundingClientRect();
+        var mid = rect.top + rect.height / 2;
+        var viewMid = window.innerHeight / 2;
+        var delta = (viewMid - mid) * 0.08;
+        var clamped = Math.max(-12, Math.min(12, delta));
+        strip.style.setProperty("--band-shift", clamped.toFixed(2) + "px");
+      }
+      window.addEventListener("scroll", updateBandParallax, { passive: true });
+      window.addEventListener("resize", updateBandParallax);
+      updateBandParallax();
+
+      function spawnWorldFx(ts) {
+        if (!title || !fx) return;
+        var rect = title.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var sparks = 1 + (Math.random() * 2 | 0);
+        for (var i = 0; i < sparks; i += 1) {
+          var p = document.createElement("span");
+          p.className = "world-fx-particle";
+          var size = rand(1.8, 5.6);
+          var angle = rand(0, Math.PI * 2);
+          var speed = rand(1.8, 6.4);
+          p.style.width = size + "px";
+          p.style.height = size + "px";
+          p.style.background = "rgba(0,0,0," + rand(0.7, 1).toFixed(2) + ")";
+          p.style.boxShadow = "0 0 " + rand(5, 14).toFixed(1) + "px rgba(0,0,0,0.35)";
+          fx.appendChild(p);
+          particles.push({
+            el: p,
+            kind: "spark",
+            x: cx + rand(-rect.width * 0.28, rect.width * 0.28),
+            y: cy + rand(-rect.height * 0.16, rect.height * 0.16),
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - rand(0.1, 1.4),
+            drag: rand(0.94, 0.985),
+            gravity: rand(0.028, 0.08),
+            life: rand(220, 560),
+            born: ts,
+            opacity: rand(0.6, 1)
+          });
+        }
+        var smokes = 1;
+        for (var j = 0; j < smokes; j += 1) {
+          var s = document.createElement("span");
+          s.className = "world-fx-particle";
+          var sSize = rand(14, 32);
+          s.style.width = sSize + "px";
+          s.style.height = sSize + "px";
+          s.style.background = "radial-gradient(circle, rgba(0,0,0,0.48) 0%, rgba(0,0,0,0.22) 38%, rgba(0,0,0,0) 74%)";
+          s.style.filter = "blur(" + rand(1.2, 2.8).toFixed(2) + "px)";
+          fx.appendChild(s);
+          particles.push({
+            el: s,
+            kind: "smoke",
+            x: cx + rand(-rect.width * 0.16, rect.width * 0.16),
+            y: cy + rand(-rect.height * 0.12, rect.height * 0.12),
+            vx: rand(-0.9, 0.9),
+            vy: rand(-2.2, -0.6),
+            drag: rand(0.95, 0.982),
+            life: rand(760, 1500),
+            born: ts,
+            size: sSize,
+            grow: rand(0.1, 0.24),
+            opacity: rand(0.22, 0.4)
+          });
+        }
+      }
+
+      function stepWorldFx(ts) {
+        if (!fxActive && particles.length === 0) {
+          fxRaf = null;
+          return;
+        }
+        if (fxActive) spawnWorldFx(ts);
+        for (var i = particles.length - 1; i >= 0; i -= 1) {
+          var pt = particles[i];
+          var age = ts - pt.born;
+          var t = age / pt.life;
+          if (t >= 1) {
+            pt.el.remove();
+            particles.splice(i, 1);
+            continue;
+          }
+          pt.vx *= pt.drag;
+          pt.vy *= pt.drag;
+          if (pt.kind === "spark") pt.vy += pt.gravity;
+          pt.x += pt.vx;
+          pt.y += pt.vy;
+          if (pt.kind === "smoke") {
+            var e = 1 - Math.pow(1 - t, 3);
+            var nowSize = pt.size * (1 + pt.grow * 16 * e);
+            pt.el.style.width = nowSize.toFixed(2) + "px";
+            pt.el.style.height = nowSize.toFixed(2) + "px";
+            pt.el.style.filter = "blur(" + (1.2 + e * 3.4).toFixed(2) + "px)";
+            pt.el.style.opacity = String((1 - e) * (1 - e) * pt.opacity);
+          } else {
+            pt.el.style.opacity = String((1 - t) * pt.opacity);
+          }
+          pt.el.style.transform = "translate(" + pt.x.toFixed(2) + "px," + pt.y.toFixed(2) + "px)";
+        }
+        fxRaf = requestAnimationFrame(stepWorldFx);
+      }
+
+      if (page && cta) {
+        function enableCtaScene() {
+          page.classList.add("is-cta-hover");
+          fxActive = true;
+          if (!fxRaf) fxRaf = requestAnimationFrame(stepWorldFx);
+        }
+        function disableCtaScene() {
+          page.classList.remove("is-cta-hover");
+          fxActive = false;
+        }
+        cta.addEventListener("mouseenter", enableCtaScene);
+        cta.addEventListener("mouseleave", disableCtaScene);
+        cta.addEventListener("focus", enableCtaScene);
+        cta.addEventListener("blur", disableCtaScene);
+      }
+    })();
+  </script>
+</body>
+</html>
