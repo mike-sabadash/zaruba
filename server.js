@@ -531,6 +531,96 @@ function parseZaruba(row) {
   };
 }
 
+// ─── Telegram Bot Webhook ─────────────────────────────
+app.post('/api/telegram/webhook', (req, res) => {
+  const update = req.body;
+  if (update.message) {
+    const msg = update.message;
+    const chatId = msg.chat.id;
+    const text = (msg.text || '').trim();
+    const from = msg.from;
+
+    if (text === '/start') {
+      // Find or create user
+      const phone = 'tg_' + from.id;
+      let user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+      if (!user) {
+        const id = uuid();
+        const nickname = from.first_name + (from.last_name ? ' ' + from.last_name : '');
+        const d = new Date().toISOString().slice(0, 10);
+        const myRefCode = generateToken();
+        db.prepare(`INSERT INTO users (id, phone, nickname, dailyDate, referralCode, createdAt) VALUES (?, ?, ?, ?, ?, ?)`)
+          .run(id, phone, nickname, d, myRefCode, now());
+        user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+      }
+
+      // Send Mini App button
+      const keyboard = {
+        inline_keyboard: [[{ text: '⚽ Открыть Zaruba', web_app: { url: 'https://zaruba.fun/miniapp.html' } }]]
+      };
+
+      sendTelegramMessage(chatId,
+        '⚽ <b>Zaruba</b> — уличная спортивная платформа\n\n' +
+        'Собирай банды, зарубайся дворами и районами!\n\n' +
+        '🪙 Баланс: <b>' + (user ? user.chips : 0) + '</b>\n' +
+        '✨ Харизма: <b>' + (user ? user.charismaTotal : 0) + ' XP</b>',
+        keyboard
+      );
+    }
+
+    if (text === '/help') {
+      sendTelegramMessage(chatId,
+        '📋 Команды:\n' +
+        '/start — Открыть Zaruba\n' +
+        '/help — Помощь\n' +
+        '/profile — Мой профиль\n' +
+        '/top — Топ района'
+      );
+    }
+
+    if (text === '/profile') {
+      const phone = 'tg_' + from.id;
+      const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+      if (user) {
+        sendTelegramMessage(chatId,
+          '👤 <b>' + user.nickname + '</b>\n\n' +
+          '🪙 Чипсеки: ' + user.chips + '\n' +
+          '✨ Харизма: ' + user.charismaTotal + ' XP\n' +
+          '🏆 Победы: ' + user.wins + '\n' +
+          '📣 Фанаты: ' + user.fansTotal
+        );
+      }
+    }
+
+    if (text === '/top') {
+      const leaders = db.prepare('SELECT nickname, charismaTotal FROM users ORDER BY charismaTotal DESC LIMIT 5').all();
+      let topText = '🏆 <b>Топ района</b>\n\n';
+      const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
+      leaders.forEach((u, i) => {
+        topText += medals[i] + ' ' + u.nickname + ' — ' + u.charismaTotal + ' XP\n';
+      });
+      sendTelegramMessage(chatId, topText);
+    }
+  }
+  res.json({ ok: true });
+});
+
+function sendTelegramMessage(chatId, text, keyboard) {
+  if (!TELEGRAM_BOT_TOKEN) return;
+  const payload = {
+    chat_id: chatId,
+    text: text,
+    parse_mode: 'HTML',
+  };
+  if (keyboard) payload.reply_markup = keyboard;
+
+  fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
+
 // ─── Seed check & start ───────────────────────────────
 const userCount = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
 if (userCount === 0) {
