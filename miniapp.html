@@ -7,7 +7,7 @@
   <meta name="telegram-webapp-capable" content="yes" />
   <title>Zaruba</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #0a0a0a;
@@ -45,8 +45,9 @@
     .nav svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
     /* ─── Typography ──────────────────────────────── */
-    h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+    h1 { font-family: 'Bebas Neue', 'Inter', sans-serif; font-size: 36px; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1; }
     h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-2); }
+    .font-display { font-family: 'Bebas Neue', 'Inter', sans-serif; letter-spacing: 0.04em; text-transform: uppercase; }
     .mono { font-variant-numeric: tabular-nums; }
     .accent { color: var(--accent); }
 
@@ -75,7 +76,7 @@
     .tag-muted { background: var(--surface-2); color: var(--text); }
 
     /* ─── Score ───────────────────────────────────── */
-    .score { font-size: 48px; font-weight: 800; letter-spacing: -0.04em; text-align: center; padding: 24px 0; }
+    .score { font-family: 'Bebas Neue', 'Inter', sans-serif; font-size: 56px; font-weight: 400; letter-spacing: 0.06em; text-align: center; padding: 24px 0; line-height: 1; }
 
     /* ─── List ────────────────────────────────────── */
     .list-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
@@ -187,7 +188,7 @@
             finished.forEach(function (z) {
               h += '<a href="#/zaruba?id=' + z.id + '" class="card flex items-center justify-between" style="text-decoration:none">';
               h += '<div><p style="font-weight:700;color:var(--text)">' + locN(z.locationId) + '</p><p class="text-xs text-muted">' + zarubaFormatDateTime(z.startsAt) + '</p></div>';
-              h += '<span class="mono" style="font-weight:700;font-size:18px">' + z.scoreA + ':' + z.scoreB + '</span></a>';
+              h += '<span class="font-display" style="font-size:22px">' + z.scoreA + ':' + z.scoreB + '</span></a>';
             });
           }
 
@@ -220,7 +221,7 @@
             : '<span class="tag tag-accent">Скоро</span>';
           h += '<a href="#/zaruba?id=' + z.id + '" class="card" style="text-decoration:none">';
           h += '<div class="flex items-center justify-between"><p style="font-weight:700;color:var(--text)">' + locN(z.locationId) + '</p>' + tag + '</div>';
-          if (z.status === 'finished') h += '<p class="mono mt-2" style="font-weight:700;font-size:20px">' + z.scoreA + ' : ' + z.scoreB + '</p>';
+          if (z.status === 'finished') h += '<p class="font-display mt-2" style="font-size:24px">' + z.scoreA + ' : ' + z.scoreB + '</p>';
           else h += '<p class="text-sm text-muted mt-2">' + zarubaFormatDateTime(z.startsAt) + '</p>';
           h += '</a>';
         });
@@ -267,7 +268,7 @@
 
         function teamCard(team, side, z) {
           if (!team) return '<div style="flex:1;text-align:center;padding:20px;border:1px dashed var(--border);border-radius:var(--radius);background:var(--surface)"><p class="text-muted text-sm">Команда ' + side + '</p><p class="text-xs text-muted mt-2">Пусто</p></div>';
-          return '<div class="card" style="flex:1"><p class="accent text-xs" style="font-weight:700">' + team.name + '</p><p class="mono mt-2" style="font-size:28px;font-weight:800">' + (side==='A' ? z.scoreA : z.scoreB) + '</p></div>';
+          return '<div class="card" style="flex:1"><p class="accent text-xs" style="font-weight:700">' + team.name + '</p><p class="font-display mt-2" style="font-size:36px">' + (side==='A' ? z.scoreA : z.scoreB) + '</p></div>';
         }
       });
     });
