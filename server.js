@@ -10,6 +10,7 @@ const db = getDb();
 
 // Telegram Bot Token — set via env or hardcoded for dev
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const DOMAIN = process.env.DOMAIN || 'zaruba.riffkiller.fun';
 
 app.use(cors());
 app.use(express.json());
@@ -556,7 +557,7 @@ app.post('/api/telegram/webhook', (req, res) => {
 
       // Send Mini App button
       const keyboard = {
-        inline_keyboard: [[{ text: '⚽ Открыть Zaruba', web_app: { url: 'https://zaruba.fun/miniapp.html' } }]]
+        inline_keyboard: [[{ text: '⚽ Открыть Zaruba', web_app: { url: 'https://' + DOMAIN + '/miniapp.html' } }]]
       };
 
       sendTelegramMessage(chatId,

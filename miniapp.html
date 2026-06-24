@@ -3,36 +3,103 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#09090b" />
+  <meta name="theme-color" content="#0a0a0a" />
   <meta name="telegram-webapp-capable" content="yes" />
-  <meta name="telegram-webapp-viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Zaruba</title>
-  <link rel="stylesheet" href="css/zaruba-vibes.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { darkMode: "class" };</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    * { -webkit-tap-highlight-color: transparent; }
-    html, body { overscroll-behavior: none; }
-    body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface-2: #1a1a1a;
+      --border: rgba(255,255,255,0.08);
+      --text: #f0f0f0;
+      --text-2: #888;
+      --text-3: #555;
+      --accent: #6366f1;
+      --accent-soft: rgba(99,102,241,0.12);
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --radius: 14px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { overscroll-behavior: none; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; font-size: 15px; line-height: 1.5; }
+    body { padding-bottom: var(--safe-bottom); }
+    input, textarea, select { font-family: inherit; }
 
-    /* ─── Telegram Mini App Layout ──────────────────── */
-    .tma-page { min-height: 100dvh; display: flex; flex-direction: column; }
-    .tma-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    .tma-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; padding-bottom: env(safe-area-inset-bottom); }
+    /* ─── Layout ──────────────────────────────────── */
+    .app { min-height: 100dvh; display: flex; flex-direction: column; }
+    .scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .page { padding: 20px 16px 100px; animation: fadeUp 0.2s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ─── Transitions ───────────────────────────────── */
-    .tma-view { animation: tma-in 0.2s ease-out; }
-    @keyframes tma-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    /* ─── Bottom Nav ──────────────────────────────── */
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; padding-bottom: var(--safe-bottom); background: rgba(10,10,10,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); }
+    .nav-inner { display: flex; justify-content: space-around; padding: 8px 0 6px; }
+    .nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 16px; border-radius: 10px; text-decoration: none; color: var(--text-3); font-size: 10px; font-weight: 600; letter-spacing: 0.03em; transition: color 0.15s; min-height: 44px; justify-content: center; }
+    .nav a.active { color: var(--accent); }
+    .nav svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ─── Touch targets ─────────────────────────────── */
-    .tma-touch { min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; }
+    /* ─── Typography ──────────────────────────────── */
+    h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+    h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); }
+    .mono { font-variant-numeric: tabular-nums; }
+    .accent { color: var(--accent); }
 
-    /* ─── Safe areas ────────────────────────────────── */
-    .tma-safe-bottom { padding-bottom: max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem)); }
+    /* ─── Cards ───────────────────────────────────── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+
+    /* ─── Buttons ─────────────────────────────────── */
+    .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 50px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 0.1s, opacity 0.1s; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-sm { height: 38px; font-size: 13px; border-radius: 10px; }
+
+    /* ─── Inputs ──────────────────────────────────── */
+    .input { width: 100%; height: 48px; padding: 0 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 15px; outline: none; }
+    .input:focus { border-color: var(--accent); }
+    .textarea { width: 100%; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 15px; resize: none; outline: none; min-height: 80px; }
+    .label { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; letter-spacing: 0.02em; }
+
+    /* ─── Tags ────────────────────────────────────── */
+    .tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+    .tag-live { background: rgba(239,68,68,0.15); color: var(--red); }
+    .tag-accent { background: var(--accent-soft); color: var(--accent); }
+    .tag-green { background: rgba(34,197,94,0.15); color: var(--green); }
+    .tag-muted { background: var(--surface-2); color: var(--text-2); }
+
+    /* ─── Score ───────────────────────────────────── */
+    .score { font-size: 48px; font-weight: 800; letter-spacing: -0.04em; text-align: center; padding: 24px 0; }
+
+    /* ─── List ────────────────────────────────────── */
+    .list-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .list-item:last-child { border-bottom: none; }
+
+    /* ─── Utilities ───────────────────────────────── */
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .mt-2 { margin-top: 8px; }
+    .mt-4 { margin-top: 16px; }
+    .mb-4 { margin-bottom: 16px; }
+    .text-center { text-align: center; }
+    .text-xs { font-size: 12px; }
+    .text-sm { font-size: 13px; }
+    .text-muted { color: var(--text-2); }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hidden { display: none !important; }
   </style>
 </head>
-<body class="bg-[#09090b] text-white">
-  <div id="app" class="tma-page"></div>
+<body>
+  <div class="app" id="app"></div>
 
   <script src="js/constants.js"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -43,599 +110,370 @@
   <script src="js/gamify.js"></script>
   <script src="js/router.js"></script>
   <script>
-    // ─── Init Telegram ────────────────────────────────
     TMA.ready();
-
-    // ─── Auth: use Telegram user or localStorage ──────
     var tgUser = TMA.getUser();
-    var sessionUser = ZarubaSession.get();
 
     function ensureUser() {
       if (tgUser) {
-        // Telegram user — find or create in DB
         return mockDb.findUserByPhone('tg_' + tgUser.id).then(function (u) {
           if (u) return u;
           var name = tgUser.firstName + (tgUser.lastName ? ' ' + tgUser.lastName : '');
           return mockDb.createUser('tg_' + tgUser.id, name);
         });
       }
-      if (sessionUser) {
-        return mockDb.getUser(sessionUser);
-      }
+      var s = ZarubaSession.get();
+      if (s) return mockDb.getUser(s);
       return Promise.resolve(null);
     }
 
-    // ─── Pages ────────────────────────────────────────
     var app = document.getElementById('app');
+    function render(html) { app.innerHTML = html; }
 
-    function renderShell(content) {
-      app.innerHTML = '<div class="tma-content" id="page-content">' + content + '</div>';
+    function nav(active) {
+      var uid = ZarubaSession.get();
+      return '<div class="nav"><div class="nav-inner">' +
+        '<a href="#/" class="' + (active === 'home' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Главная</a>' +
+        '<a href="#/feed" class="' + (active === 'feed' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Лента</a>' +
+        '<a href="#/shop" class="' + (active === 'shop' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Магазин</a>' +
+        '<a href="#/profile' + (uid ? '?id=' + uid : '') + '" class="' + (active === 'profile' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</a>' +
+        '</div></div>';
     }
 
-    // ─── Home Page ────────────────────────────────────
-    Router.register('/', function (root) {
+    // ─── HOME ─────────────────────────────────────
+    Router.register('/', function (root, qs) {
       ensureUser().then(function (user) {
-        var uid = user ? user.id : null;
-        var chipBadge = user
-          ? '<span class="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold text-amber-400">🪙 ' + user.chips + '</span>'
-          : '';
-
-        Promise.all([
-          mockDb.listLocations(),
-          mockDb.listZarubas(),
-          mockDb.leaderboardByCharisma(5),
-        ]).then(function (results) {
-          var locs = results[0], zarubas = results[1], lb = results[2];
+        Promise.all([mockDb.listZarubas(), mockDb.listLocations(), mockDb.leaderboardByCharisma(3)]).then(function (r) {
+          var zarubas = r[0], locs = r[1], lb = r[2];
           var live = zarubas.filter(function (z) { return z.status === 'live'; });
+          function locN(id) { var l = locs.find(function(x){return x.id===id;}); return l ? l.name : '—'; }
 
-          function locName(id) {
-            var l = locs.find(function (x) { return x.id === id; });
-            return l ? l.name : 'Площадка';
-          }
-
-          var html = '<div class="px-4 pt-4 pb-24 tma-view">';
-
+          var h = '<div class="page">';
           // Header
-          html += '<div class="flex items-center justify-between mb-5">';
-          html += '<h1 class="font-zb-display text-2xl font-bold text-white">Zaruba</h1>';
-          html += '<div class="flex items-center gap-2">' + chipBadge;
-          if (user) html += '<a href="#/profile?id=' + uid + '" class="tma-touch rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">' + user.nickname + '</a>';
-          else html += '<a href="#/login" class="tma-touch rounded-full bg-[#8ea2ff] px-3 py-1.5 text-xs font-bold text-[#0f1220]">Войти</a>';
-          html += '</div></div>';
+          h += '<div class="flex items-center justify-between mb-4">';
+          h += '<h1>Zaruba</h1>';
+          if (user) h += '<span class="tag tag-accent">🪙 ' + user.chips + '</span>';
+          else h += '<a href="#/login" class="tag tag-accent" style="text-decoration:none">Войти</a>';
+          h += '</div>';
 
-          // Live strip
-          if (live.length > 0) {
-            html += '<div class="mb-5">';
-            html += '<div class="flex items-center gap-2 mb-2"><span class="text-[11px] font-bold uppercase tracking-widest text-red-500">Live</span><span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span></div>';
-            html += '<div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4" style="scroll-snap-type: x mandatory;">';
+          // Live
+          if (live.length) {
+            h += '<h2 class="mb-4">Сейчас играют</h2>';
             live.forEach(function (z) {
-              html += '<a href="#/zaruba?id=' + z.id + '" class="shrink-0 snap-start rounded-xl bg-gradient-to-br from-red-500/20 to-red-900/20 border border-red-500/30 p-3 min-w-[120px]">';
-              html += '<p class="text-[10px] font-bold uppercase text-red-400">' + zarubaSportLabel(z.sport) + '</p>';
-              html += '<p class="text-sm font-bold text-white mt-0.5 truncate">' + locName(z.locationId) + '</p>';
-              html += '<p class="font-zb-display text-xl font-bold text-red-400 mt-1">' + z.scoreA + ':' + z.scoreB + '</p></a>';
-            });
-            html += '</div></div>';
-          }
-
-          // Create button
-          html += '<button onclick="Router.navigate(\'/create\')" class="w-full mb-5 rounded-2xl bg-gradient-to-r from-[#8ea2ff] to-[#7f95fa] py-4 text-center text-[#0f1220] font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">+ Забить Зарубу</button>';
-
-          // Feed
-          html += '<div class="space-y-3">';
-          if (zarubas.length === 0) {
-            html += '<div class="rounded-2xl border border-dashed border-white/20 p-8 text-center">';
-            html += '<p class="text-3xl mb-2">⚽</p>';
-            html += '<p class="text-sm text-zinc-400">Пока тихо. Создай первую зарубу!</p></div>';
-          } else {
-            zarubas.forEach(function (z) {
-              var statusBadge = z.status === 'live'
-                ? '<span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">LIVE</span>'
-                : z.status === 'finished'
-                  ? '<span class="rounded-full bg-zinc-600 px-2 py-0.5 text-[10px] font-bold text-white">Итог</span>'
-                  : '<span class="rounded-full bg-[#8ea2ff]/20 px-2 py-0.5 text-[10px] font-bold text-[#8ea2ff]">Скоро</span>';
-              var score = z.status === 'finished'
-                ? z.scoreA + ' : ' + z.scoreB
-                : '— : —';
-
-              html += '<a href="#/zaruba?id=' + z.id + '" class="block rounded-2xl bg-white/5 border border-white/10 p-4 active:bg-white/10 transition-colors">';
-              html += '<div class="flex justify-between items-start">';
-              html += '<div><p class="text-[10px] font-bold uppercase tracking-wider text-[#8ea2ff]">' + zarubaSportLabel(z.sport) + '</p>';
-              html += '<p class="text-lg font-bold text-white mt-0.5">' + locName(z.locationId) + '</p>';
-              html += '<p class="text-xs text-zinc-500 mt-0.5">' + zarubaFormatDateTime(z.startsAt) + '</p></div>';
-              html += '<div class="text-right">' + statusBadge;
-              html += '<p class="font-zb-display text-2xl font-bold text-[#8ea2ff] mt-1 tabular-nums">' + score + '</p></div></div>';
-              html += '<p class="text-xs text-zinc-400 mt-2 line-clamp-1">' + (z.description || 'Без описания') + '</p></a>';
+              h += '<a href="#/zaruba?id=' + z.id + '" class="card flex items-center justify-between" style="text-decoration:none;border-left:3px solid var(--red)">';
+              h += '<div><p class="text-sm text-muted">' + zarubaSportLabel(z.sport) + '</p><p style="font-weight:700;margin-top:2px">' + locN(z.locationId) + '</p></div>';
+              h += '<span class="tag tag-live">● LIVE</span></a>';
             });
           }
-          html += '</div>';
+
+          // Quick create
+          if (user) h += '<button onclick="Router.navigate(\'/create\')" class="btn btn-primary mt-4 mb-4" style="font-size:14px">+ Новая заруба</button>';
+
+          // Upcoming
+          var upcoming = zarubas.filter(function(z){return z.status==='scheduled';});
+          if (upcoming.length) {
+            h += '<h2 class="mb-4">Скоро</h2>';
+            upcoming.forEach(function (z) {
+              h += '<a href="#/zaruba?id=' + z.id + '" class="card" style="text-decoration:none">';
+              h += '<div class="flex items-center justify-between"><p style="font-weight:700">' + locN(z.locationId) + '</p><span class="tag tag-muted">' + zarubaFormatDateTime(z.startsAt) + '</span></div>';
+              h += '<p class="text-sm text-muted mt-2">' + (z.description || '').slice(0, 80) + '</p></a>';
+            });
+          }
+
+          // Finished
+          var finished = zarubas.filter(function(z){return z.status==='finished';}).slice(0, 3);
+          if (finished.length) {
+            h += '<h2 class="mt-4 mb-4">Последние</h2>';
+            finished.forEach(function (z) {
+              h += '<a href="#/zaruba?id=' + z.id + '" class="card flex items-center justify-between" style="text-decoration:none">';
+              h += '<div><p style="font-weight:700">' + locN(z.locationId) + '</p><p class="text-xs text-muted">' + zarubaFormatDateTime(z.startsAt) + '</p></div>';
+              h += '<span class="mono" style="font-weight:700;font-size:18px">' + z.scoreA + ':' + z.scoreB + '</span></a>';
+            });
+          }
 
           // Leaderboard
-          if (lb.length > 0) {
-            html += '<div class="mt-6">';
-            html += '<p class="text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-3">Топ района</p>';
-            var medals = ['🥇', '🥈', '🥉'];
-            lb.slice(0, 3).forEach(function (u, i) {
-              html += '<div class="flex items-center justify-between py-2">';
-              html += '<span class="flex items-center gap-2"><span class="text-lg">' + (medals[i] || (i + 1)) + '</span>';
-              html += '<span class="text-sm font-bold text-white">' + u.nickname + '</span></span>';
-              html += '<span class="text-xs font-bold text-[#8ea2ff]">' + u.charismaTotal + ' XP</span></div>';
+          if (lb.length) {
+            h += '<h2 class="mt-4 mb-4">Топ</h2>';
+            var medals = ['🥇','🥈','🥉'];
+            lb.forEach(function (u, i) {
+              h += '<div class="list-item"><span class="flex items-center gap-3"><span style="width:24px;text-align:center">' + (medals[i]||'') + '</span><span style="font-weight:600">' + u.nickname + '</span></span><span class="tag tag-accent">' + u.charismaTotal + '</span></div>';
             });
-            html += '</div>';
           }
 
-          html += '</div>';
-
-          // Bottom nav
-          html += '<div class="tma-nav">';
-          html += '<div class="flex items-center justify-around bg-[#11131a]/95 backdrop-blur-xl border-t border-white/10 px-2 py-2">';
-          html += '<a href="#/" class="tma-touch flex flex-col items-center gap-0.5 text-[#8ea2ff]"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10"/></svg><span class="text-[10px] font-bold">Главная</span></a>';
-          html += '<a href="#/shop" class="tma-touch flex flex-col items-center gap-0.5 text-zinc-500"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6z M3 6h18 M16 10a4 4 0 0 1-8 0"/></svg><span class="text-[10px] font-bold">Магазин</span></a>';
-          html += '<a href="#/profile' + (uid ? '?id=' + uid : '') + '" class="tma-touch flex flex-col items-center gap-0.5 text-zinc-500"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg><span class="text-[10px] font-bold">Профиль</span></a>';
-          html += '</div></div>';
-
-          renderShell(html);
+          h += '</div>' + nav('home');
+          render(h);
         });
       });
     });
 
-    // ─── Login Page ───────────────────────────────────
-    Router.register('/login', function (root) {
-      var refCode = Router.parseQs(window.location.hash.split('?')[1] || '').ref || null;
-      var html = '<div class="px-4 pt-6 pb-8 tma-view">';
-      html += '<div class="text-center mb-8">';
-      html += '<p class="text-5xl mb-3">⚽</p>';
-      html += '<h1 class="font-zb-display text-3xl font-bold">Вход</h1>';
-      html += '<p class="text-sm text-zinc-400 mt-2">Мок-SMS: код <span class="font-bold text-[#8ea2ff]">123456</span></p></div>';
+    // ─── FEED ─────────────────────────────────────
+    Router.register('/feed', function (root, qs) {
+      Promise.all([mockDb.listZarubas(), mockDb.listLocations()]).then(function (r) {
+        var zarubas = r[0], locs = r[1];
+        function locN(id) { var l = locs.find(function(x){return x.id===id;}); return l ? l.name : '—'; }
 
-      html += '<div id="login-step-phone">';
-      html += '<label class="block text-sm font-bold text-zinc-300 mb-2">Телефон</label>';
-      html += '<input id="tma-phone" type="tel" placeholder="+7 900 000-00-00" class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3.5 text-white text-base" />';
-      html += '<button onclick="tmaLoginSend()" class="w-full mt-4 rounded-xl bg-[#8ea2ff] py-3.5 text-[#0f1220] font-bold text-sm active:scale-[0.98] transition-transform">Получить код</button>';
-      html += '</div>';
-
-      html += '<div id="login-step-code" style="display:none">';
-      html += '<label class="block text-sm font-bold text-zinc-300 mb-2">Код из SMS</label>';
-      html += '<input id="tma-code" type="text" inputmode="numeric" class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3.5 text-white text-base" />';
-      html += '<button onclick="tmaLoginVerify()" class="w-full mt-4 rounded-xl bg-[#8ea2ff] py-3.5 text-[#0f1220] font-bold text-sm active:scale-[0.98] transition-transform">Войти</button>';
-      html += '<button onclick="tmaLoginBack()" class="w-full mt-3 py-3 text-sm text-zinc-400 font-bold">Изменить номер</button>';
-      html += '</div>';
-
-      html += '<div id="login-step-nick" style="display:none">';
-      html += '<label class="block text-sm font-bold text-zinc-300 mb-2">Ник на районе</label>';
-      html += '<input id="tma-nick" type="text" placeholder="Дворовый10" class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3.5 text-white text-base" />';
-      html += '<button onclick="tmaLoginRegister()" class="w-full mt-4 rounded-xl bg-[#8ea2ff] py-3.5 text-[#0f1220] font-bold text-sm active:scale-[0.98] transition-transform">Создать профиль</button>';
-      html += '</div>';
-
-      html += '<p id="login-err" class="mt-4 text-center text-sm font-semibold text-red-400" style="display:none"></p>';
-      html += '</div>';
-
-      renderShell(html);
-
-      // Login logic
-      var _phone = '', _ref = refCode;
-      window.tmaLoginSend = function () {
-        _phone = document.getElementById('tma-phone').value.replace(/\D/g, '');
-        if (_phone.length < 10) { tmaShowErr('Введите корректный номер'); return; }
-        document.getElementById('login-step-phone').style.display = 'none';
-        document.getElementById('login-step-code').style.display = 'block';
-        TMA.haptic.selection();
-      };
-      window.tmaLoginBack = function () {
-        document.getElementById('login-step-code').style.display = 'none';
-        document.getElementById('login-step-phone').style.display = 'block';
-      };
-      window.tmaLoginVerify = function () {
-        var code = document.getElementById('tma-code').value.trim();
-        if (code !== ZARUBA_MOCK_SMS_CODE) { tmaShowErr('Неверный код: ' + ZARUBA_MOCK_SMS_CODE); return; }
-        mockDb.findUserByPhone(_phone).then(function (u) {
-          if (u) { ZarubaSession.set(u.id); Router.navigate('/'); return; }
-          document.getElementById('login-step-code').style.display = 'none';
-          document.getElementById('login-step-nick').style.display = 'block';
-          TMA.haptic.selection();
+        var h = '<div class="page"><h1 class="mb-4">Лента</h1>';
+        if (!zarubas.length) h += '<p class="text-muted text-center" style="padding:40px 0">Пока пусто</p>';
+        zarubas.forEach(function (z) {
+          var tag = z.status==='live' ? '<span class="tag tag-live">● LIVE</span>'
+            : z.status==='finished' ? '<span class="tag tag-muted">Итог</span>'
+            : '<span class="tag tag-accent">Скоро</span>';
+          h += '<a href="#/zaruba?id=' + z.id + '" class="card" style="text-decoration:none">';
+          h += '<div class="flex items-center justify-between"><p style="font-weight:700">' + locN(z.locationId) + '</p>' + tag + '</div>';
+          if (z.status === 'finished') h += '<p class="mono mt-2" style="font-weight:700;font-size:20px">' + z.scoreA + ' : ' + z.scoreB + '</p>';
+          else h += '<p class="text-sm text-muted mt-2">' + zarubaFormatDateTime(z.startsAt) + '</p>';
+          h += '</a>';
         });
-      };
-      window.tmaLoginRegister = function () {
-        var nick = document.getElementById('tma-nick').value.trim();
-        if (nick.length < 2) { tmaShowErr('Ник от 2 символов'); return; }
-        mockDb.createUser(_phone, nick, _ref).then(function (u) {
-          ZarubaSession.set(u.id);
-          TMA.haptic.notification('success');
-          Router.navigate('/');
-        });
-      };
-      function tmaShowErr(msg) {
-        var el = document.getElementById('login-err');
-        el.textContent = msg;
-        el.style.display = 'block';
-      }
+        h += '</div>' + nav('feed');
+        render(h);
+      });
     });
 
-    // ─── Zaruba Detail Page ───────────────────────────
+    // ─── ZARUBA DETAIL ────────────────────────────
     Router.register('/zaruba', function (root, qs) {
       if (!qs.id) { Router.navigate('/'); return; }
+      Promise.all([mockDb.getZaruba(qs.id), mockDb.listLocations(), mockDb.listTeamsForZaruba(qs.id)]).then(function (r) {
+        var z = r[0], locs = r[1], teams = r[2];
+        if (!z) { render('<div class="page text-center text-muted">Не найдено</div>'); return; }
+        var loc = locs.find(function(l){return l.id===z.locationId;});
+        var teamA = teams.find(function(t){return t.side==='A';});
+        var teamB = teams.find(function(t){return t.side==='B';});
 
-      Promise.all([
-        mockDb.getZaruba(qs.id),
-        mockDb.listLocations(),
-        mockDb.listTeamsForZaruba(qs.id),
-      ]).then(function (results) {
-        var z = results[0], allLocs = results[1], teams = results[2];
-        if (!z) { renderShell('<div class="px-4 pt-6 text-center text-zinc-400">Не найдено</div>'); return; }
+        var sc = z.status==='live' ? 'tag-live' : z.status==='finished' ? 'tag-muted' : 'tag-accent';
+        var st = z.status==='live' ? '● LIVE' : z.status==='finished' ? 'Завершена' : 'Ожидает';
 
-        var loc = allLocs.find(function (l) { return l.id === z.locationId; });
-        var teamA = teams.find(function (t) { return t.side === 'A'; });
-        var teamB = teams.find(function (t) { return t.side === 'B'; });
-        var uid = ZarubaSession.get();
+        var h = '<div class="page">';
+        h += '<div class="text-center mb-4"><span class="tag ' + sc + '">' + st + '</span>';
+        h += '<p class="score mono">' + z.scoreA + ' : ' + z.scoreB + '</p>';
+        h += '<p style="font-weight:600">' + (loc ? loc.name : '—') + '</p>';
+        h += '<p class="text-sm text-muted">' + zarubaSportLabel(z.sport) + ' · ' + zarubaFormatDateTime(z.startsAt) + '</p></div>';
 
-        var html = '<div class="px-4 pt-4 pb-24 tma-view">';
-
-        // Status + Score
-        var statusColor = z.status === 'live' ? 'text-red-400' : z.status === 'finished' ? 'text-zinc-400' : 'text-[#8ea2ff]';
-        var statusText = z.status === 'live' ? '● LIVE' : z.status === 'finished' ? 'Завершена' : 'Ожидает';
-
-        html += '<div class="text-center mb-6">';
-        html += '<p class="text-xs font-bold uppercase tracking-widest ' + statusColor + ' mb-2">' + statusText + '</p>';
-        html += '<p class="font-zb-display text-6xl font-bold text-white tabular-nums">' + z.scoreA + ' : ' + z.scoreB + '</p>';
-        html += '<p class="text-sm text-zinc-400 mt-2">' + (loc ? loc.name : '') + '</p>';
-        html += '<p class="text-xs text-zinc-500">' + zarubaSportLabel(z.sport) + ' · ' + zarubaFormatDateTime(z.startsAt) + '</p></div>';
+        if (z.description) h += '<p class="text-sm text-muted mb-4">' + z.description + '</p>';
 
         // Teams
-        html += '<div class="grid grid-cols-2 gap-3 mb-4">';
-        html += renderTmaTeamCard(teamA, 'А', z);
-        html += renderTmaTeamCard(teamB, 'Б', z);
-        html += '</div>';
+        h += '<div class="flex gap-3">';
+        h += teamCard(teamA, 'A', z);
+        h += teamCard(teamB, 'B', z);
+        h += '</div>';
 
-        // Chat
-        html += '<div class="rounded-2xl bg-white/5 border border-white/10 p-4 mb-4">';
-        html += '<p class="text-sm font-bold text-white mb-3">💬 Чат</p>';
-        html += '<div id="tma-chat" class="space-y-2 max-h-40 overflow-y-auto mb-3"></div>';
-        if (uid) {
-          html += '<div class="flex gap-2">';
-          html += '<input id="tma-chat-input" type="text" placeholder="Напиши..." class="flex-1 rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white" />';
-          html += '<button onclick="tmaSendChat()" class="rounded-xl bg-[#8ea2ff] px-4 py-2.5 text-sm font-bold text-[#0f1220]">→</button>';
-          html += '</div>';
-        }
-        html += '</div>';
-
-        // Judge button
+        // Actions
+        var uid = ZarubaSession.get();
         if (uid && z.refereeId === uid) {
-          html += '<a href="#/judge?id=' + z.id + '" class="block rounded-2xl bg-[#8ea2ff] py-3.5 text-center text-[#0f1220] font-bold text-sm mb-4 active:scale-[0.98] transition-transform">Судейская панель</a>';
+          h += '<a href="#/judge?id=' + z.id + '" class="btn btn-ghost mt-4" style="text-decoration:none">Судейская панель</a>';
         }
 
-        html += '</div>';
-        renderShell(html);
+        h += '</div>' + nav('');
+        render(h);
 
-        // Load chat
-        mockDb.listMessages(z.id).then(function (msgs) {
-          var chatEl = document.getElementById('tma-chat');
-          if (!chatEl) return;
-          if (msgs.length === 0) { chatEl.innerHTML = '<p class="text-xs text-zinc-500 text-center">Пока пусто</p>'; return; }
-          var userIds = Array.from(new Set(msgs.map(function (m) { return m.userId; })));
-          Promise.all(userIds.map(function (id) { return mockDb.getUser(id).then(function (u) { return { id: id, nick: u ? u.nickname : '?' }; }); })).then(function (users) {
-            var nickMap = {};
-            users.forEach(function (u) { nickMap[u.id] = u.nick; });
-            chatEl.innerHTML = msgs.map(function (m) {
-              return '<div class="text-xs"><span class="font-bold text-[#8ea2ff]">' + (nickMap[m.userId] || '?') + ':</span> <span class="text-zinc-300">' + m.body + '</span></div>';
-            }).join('');
-            chatEl.scrollTop = chatEl.scrollHeight;
-          });
-        });
-
-        window.tmaSendChat = function () {
-          var input = document.getElementById('tma-chat-input');
-          var text = input.value.trim();
-          if (!text || !uid) return;
-          mockDb.postFanChat({ zarubaId: z.id, userId: uid, body: text }).then(function () {
-            input.value = '';
-            TMA.haptic.impact('light');
-            Router.resolve();
-          });
-        };
+        function teamCard(team, side, z) {
+          if (!team) return '<div class="card" style="flex:1;text-align:center;padding:20px"><p class="text-muted text-sm">Команда ' + side + '</p><p class="text-xs text-muted mt-2">Пусто</p></div>';
+          return '<div class="card" style="flex:1"><p class="accent text-xs" style="font-weight:700">' + team.name + '</p><p class="mono mt-2" style="font-size:28px;font-weight:800">' + (side==='A' ? z.scoreA : z.scoreB) + '</p></div>';
+        }
       });
-
-      function renderTmaTeamCard(team, side, z) {
-        if (!team) {
-          return '<div class="rounded-2xl bg-white/5 border border-white/10 p-3 text-center"><p class="text-xs font-bold text-zinc-400">Команда ' + side + '</p><p class="text-[10px] text-zinc-600 mt-1">Пусто</p></div>';
-        }
-        return '<div class="rounded-2xl bg-white/5 border border-white/10 p-3"><p class="text-xs font-bold text-[#8ea2ff]">' + team.name + '</p><p class="text-[10px] text-zinc-500 mt-0.5">Капитан: ' + (team.captainId ? 'есть' : '—') + '</p><p class="font-zb-display text-lg font-bold text-white mt-1">' + (side === 'А' ? z.scoreA : z.scoreB) + '</p></div>';
-      }
     });
 
-    // ─── Shop Page ────────────────────────────────────
-    Router.register('/shop', function (root) {
-      var uid = ZarubaSession.get();
-
-      function renderShop(user) {
-        var html = '<div class="px-4 pt-4 pb-24 tma-view">';
-        html += '<h1 class="font-zb-display text-2xl font-bold mb-1">Магазин</h1>';
-        if (user) {
-          html += '<p class="text-xs text-zinc-400 mb-5">Баланс: <span class="font-bold text-amber-400">🪙 ' + user.chips + '</span></p>';
-          ZARUBA_SHOP_ITEMS.forEach(function (item) {
-            var owned = user.purchases.indexOf(item.id) !== -1;
-            var can = !owned && user.chips >= item.price;
-            html += '<div class="rounded-2xl bg-white/5 border border-white/10 p-4 mb-3">';
-            html += '<p class="font-bold text-white text-sm">' + item.title + '</p>';
-            html += '<p class="text-xs text-zinc-400 mt-0.5">' + item.description + '</p>';
-            html += '<div class="flex items-center justify-between mt-3">';
-            html += '<span class="text-xs font-bold text-amber-400">🪙 ' + item.price + '</span>';
-            if (owned) html += '<span class="text-xs font-bold text-emerald-400">✓ Куплено</span>';
-            else html += '<button onclick="tmaBuy(\'' + item.id + '\')" class="rounded-xl bg-[#8ea2ff] px-4 py-2 text-xs font-bold text-[#0f1220] ' + (can ? '' : 'opacity-40') + '" ' + (can ? '' : 'disabled') + '>Забрать</button>';
-            html += '</div></div>';
-          });
-        } else {
-          html += '<div class="rounded-2xl border border-dashed border-white/20 p-8 text-center"><p class="text-sm text-zinc-400">Войди, чтобы тратить чипсеки</p>';
-          html += '<a href="#/login" class="inline-block mt-3 rounded-xl bg-[#8ea2ff] px-5 py-2.5 text-sm font-bold text-[#0f1220]">Войти</a></div>';
-        }
-        html += '</div>';
-        renderShell(html);
-      }
-
-      if (uid) mockDb.getUser(uid).then(renderShop);
-      else renderShop(null);
-
-      window.tmaBuy = function (itemId) {
-        if (!uid) return;
-        mockDb.purchaseShopItem(uid, itemId).then(function () {
-          TMA.haptic.notification('success');
-          if (typeof zarubaToast === 'function') zarubaToast('Куплено!', 'win', 2000);
-          mockDb.getUser(uid).then(renderShop);
-        }).catch(function (e) {
-          if (typeof zarubaToast === 'function') zarubaToast(e.message, 'info', 3000);
-        });
-      };
-    });
-
-    // ─── Profile Page ─────────────────────────────────
-    Router.register('/profile', function (root, qs) {
-      var uid = qs.id || ZarubaSession.get();
-      if (!uid) { Router.navigate('/login'); return; }
-
-      mockDb.getUser(uid).then(function (u) {
-        if (!u) { renderShell('<div class="px-4 pt-6 text-center text-zinc-400">Не найден</div>'); return; }
-
-        var isMe = ZarubaSession.get() === uid;
-        var prog = zarubaCharismaProgress(u.charismaTotal);
-        var status = zarubaCharismaStatus(u.charismaTotal);
-
-        var html = '<div class="px-4 pt-4 pb-24 tma-view">';
-
-        // User card
-        html += '<div class="rounded-2xl bg-gradient-to-br from-[#8ea2ff]/20 to-purple-500/20 border border-white/10 p-5 mb-4">';
-        html += '<div class="flex items-center gap-4">';
-        html += '<div class="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold text-[#8ea2ff]">' + u.nickname.charAt(0) + '</div>';
-        html += '<div class="flex-1 min-w-0"><p class="text-lg font-bold text-white truncate">' + u.nickname + '</p>';
-        html += '<p class="text-xs text-violet-400">' + status + '</p>';
-        html += '<div class="flex gap-2 mt-2">';
-        html += '<span class="rounded-lg bg-amber-500/15 px-2 py-0.5 text-[11px] font-bold text-amber-400">🪙 ' + u.chips + '</span>';
-        html += '<span class="rounded-lg bg-cyan-500/15 px-2 py-0.5 text-[11px] font-bold text-cyan-400">✨ ' + u.charismaTotal + ' XP</span>';
-        html += '</div></div></div></div>';
-
-        // Referral
-        if (isMe && u.referralCode) {
-          html += '<div class="rounded-2xl bg-white/5 border border-white/10 p-4 mb-4">';
-          html += '<p class="text-sm font-bold text-white mb-2">🤝 Пригласи друга</p>';
-          html += '<p class="text-xs text-zinc-400 mb-3">Ты: +50, друг: +75 чипсеков</p>';
-          html += '<div class="flex gap-2">';
-          html += '<input type="text" readonly value="' + window.location.origin + '/miniapp.html#/login?ref=' + u.referralCode + '" class="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-xs text-zinc-300" id="tma-ref-link" />';
-          html += '<button onclick="tmaCopyRef()" class="rounded-lg bg-[#8ea2ff] px-3 py-2 text-xs font-bold text-[#0f1220]">Копировать</button>';
-          html += '</div>';
-          html += '<p class="text-[10px] text-zinc-500 mt-2">Приглашено: ' + u.referredCount + ' чел.</p></div>';
-        }
-
-        // Progress
-        html += '<div class="rounded-2xl bg-white/5 border border-white/10 p-4 mb-4">';
-        html += '<p class="text-sm font-bold text-white mb-2">Прогресс</p>';
-        html += '<div class="h-2 rounded-full bg-white/10 overflow-hidden">';
-        html += '<div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-amber-400" style="width:' + Math.min(100, prog.pct) + '%"></div></div>';
-        html += '<p class="text-[10px] text-zinc-500 mt-1.5">' + Math.round(prog.current) + ' / ' + prog.next + ' XP</p></div>';
-
-        // Achievements
-        if (u.achievements.length > 0) {
-          html += '<div class="rounded-2xl bg-white/5 border border-white/10 p-4 mb-4">';
-          html += '<p class="text-sm font-bold text-white mb-3">Ачивки</p>';
-          html += '<div class="grid grid-cols-3 gap-2">';
-          var ACH = { first_zaruba: ['🏟', 'Первая'], five_wins: ['👑', '5 побед'], ten_fans: ['📣', '10 фанатов'], hat_trick: ['⚽', 'Хет-трик'], first_fan: ['❤️', 'Фанат'], sharp_crowd: ['👀', 'Тусовка'], first_referral: ['🤝', 'Реферал'] };
-          u.achievements.forEach(function (a) {
-            var m = ACH[a] || ['⭐', a];
-            html += '<div class="text-center rounded-xl bg-white/5 p-2"><p class="text-xl">' + m[0] + '</p><p class="text-[9px] text-zinc-400 mt-0.5">' + m[1] + '</p></div>';
-          });
-          html += '</div></div>';
-        }
-
-        // Logout
-        if (isMe) {
-          html += '<button onclick="tmaLogout()" class="w-full rounded-xl border border-white/20 py-3 text-sm font-bold text-zinc-400">Выйти</button>';
-        }
-
-        html += '</div>';
-        renderShell(html);
-      });
-
-      window.tmaCopyRef = function () {
-        var input = document.getElementById('tma-ref-link');
-        if (input) {
-          navigator.clipboard.writeText(input.value).then(function () {
-            TMA.haptic.notification('success');
-            if (typeof zarubaToast === 'function') zarubaToast('Скопировано!', 'win', 1500);
-          });
-        }
-      };
-
-      window.tmaLogout = function () {
-        ZarubaSession.clear();
-        TMA.haptic.impact('medium');
-        Router.navigate('/');
-      };
-    });
-
-    // ─── Create Zaruba Page ───────────────────────────
+    // ─── CREATE ───────────────────────────────────
     Router.register('/create', function (root) {
       var uid = ZarubaSession.get();
       if (!uid) { Router.navigate('/login'); return; }
 
-      var html = '<div class="px-4 pt-4 pb-8 tma-view">';
-      html += '<h1 class="font-zb-display text-2xl font-bold mb-5">Забить зарубу</h1>';
+      var h = '<div class="page">';
+      h += '<h1 class="mb-4">Новая заруба</h1>';
 
-      // Sport
-      html += '<p class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Вид спорта</p>';
-      html += '<div class="flex gap-2 mb-5">';
-      ['football_5', 'basketball_3'].forEach(function (s, i) {
-        var active = i === 0;
-        html += '<button onclick="tmaSetSport(this,\'' + s + '\')" class="tma-sport-btn flex-1 rounded-xl border py-3 text-center text-sm font-bold ' + (active ? 'border-[#8ea2ff] bg-[#8ea2ff]/10 text-[#8ea2ff]' : 'border-white/10 bg-white/5 text-zinc-400') + '" data-sport="' + s + '">';
-        html += (s === 'football_5' ? '⚽ Футбол' : '🏀 Баскет') + '</button>';
-      });
-      html += '</div>';
+      h += '<label class="label">Вид спорта</label>';
+      h += '<div class="flex gap-2 mb-4">';
+      h += '<button onclick="setSport(this,\'football_5\')" class="btn btn-ghost btn-sm sport-btn" style="flex:1" data-s="football_5">⚽ Футбол</button>';
+      h += '<button onclick="setSport(this,\'basketball_3\')" class="btn btn-ghost btn-sm sport-btn" style="flex:1" data-s="basketball_3">🏀 Баскет</button>';
+      h += '</div>';
 
-      // Description
-      html += '<label class="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Описание</label>';
-      html += '<textarea id="tma-create-desc" rows="2" placeholder="О чём заруба?" class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white resize-none mb-5"></textarea>';
+      h += '<label class="label">Описание</label>';
+      h += '<textarea id="c-desc" class="textarea mb-4" placeholder="О чём заруба?"></textarea>';
 
-      // Date
-      html += '<label class="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Когда</label>';
-      html += '<input id="tma-create-dt" type="datetime-local" class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white mb-5" />';
+      h += '<label class="label">Когда</label>';
+      h += '<input id="c-dt" type="datetime-local" class="input mb-4" />';
 
-      // Location
-      html += '<label class="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Площадка</label>';
-      html += '<select id="tma-create-loc" class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white mb-6"></select>';
+      h += '<label class="label">Площадка</label>';
+      h += '<select id="c-loc" class="input mb-4"></select>';
 
-      // Submit
-      html += '<button onclick="tmaCreateZaruba()" class="w-full rounded-2xl bg-gradient-to-r from-[#8ea2ff] to-[#7f95fa] py-4 text-center text-[#0f1220] font-bold text-sm active:scale-[0.98] transition-transform">Создать</button>';
-      html += '</div>';
-
-      renderShell(html);
-
-      // Fill locations
-      mockDb.listLocations().then(function (locs) {
-        var sel = document.getElementById('tma-create-loc');
-        if (sel) sel.innerHTML = '<option value="">Выбери площадку</option>' + locs.map(function (l) { return '<option value="' + l.id + '">' + l.name + '</option>'; }).join('');
-      });
+      h += '<button onclick="doCreate()" class="btn btn-primary mt-4">Создать</button>';
+      h += '</div>' + nav('');
+      render(h);
 
       var _sport = 'football_5';
-      window.tmaSetSport = function (btn, sport) {
+      mockDb.listLocations().then(function(locs){
+        var s=document.getElementById('c-loc');
+        if(s) s.innerHTML='<option value="">Выбери</option>'+locs.map(function(l){return '<option value="'+l.id+'">'+l.name+'</option>';}).join('');
+      });
+
+      window.setSport = function(btn, sport) {
         _sport = sport;
-        document.querySelectorAll('.tma-sport-btn').forEach(function (b) {
-          b.className = 'tma-sport-btn flex-1 rounded-xl border py-3 text-center text-sm font-bold border-white/10 bg-white/5 text-zinc-400';
-        });
-        btn.className = 'tma-sport-btn flex-1 rounded-xl border py-3 text-center text-sm font-bold border-[#8ea2ff] bg-[#8ea2ff]/10 text-[#8ea2ff]';
-        TMA.haptic.selection();
+        document.querySelectorAll('.sport-btn').forEach(function(b){b.className='btn btn-ghost btn-sm sport-btn';});
+        btn.className='btn btn-ghost btn-sm sport-btn';
+        btn.style.background='var(--accent-soft)';
+        btn.style.color='var(--accent)';
+        btn.style.borderColor='var(--accent)';
       };
 
-      window.tmaCreateZaruba = function () {
-        var desc = document.getElementById('tma-create-desc').value;
-        var dt = document.getElementById('tma-create-dt').value;
-        var loc = document.getElementById('tma-create-loc').value;
-        if (!loc || !dt) { if (typeof zarubaToast === 'function') zarubaToast('Заполни все поля', 'info'); return; }
-
-        mockDb.createZaruba({
-          sport: _sport,
-          locationId: loc,
-          startsAt: new Date(dt).toISOString(),
-          description: desc,
-          organizerId: uid,
-        }).then(function (z) {
+      window.doCreate = function() {
+        var desc = document.getElementById('c-desc').value;
+        var dt = document.getElementById('c-dt').value;
+        var loc = document.getElementById('c-loc').value;
+        if (!loc || !dt) return;
+        mockDb.createZaruba({ sport: _sport, locationId: loc, startsAt: new Date(dt).toISOString(), description: desc, organizerId: uid }).then(function(z) {
           TMA.haptic.notification('success');
           Router.navigate('/zaruba?id=' + z.id);
         });
       };
     });
 
-    // ─── Judge Page ───────────────────────────────────
+    // ─── LOGIN ────────────────────────────────────
+    Router.register('/login', function (root) {
+      var refCode = (window.location.hash.split('?')[1]||'').split('ref=')[1] || null;
+      var h = '<div class="page" style="padding-top:60px">';
+      h += '<div class="text-center mb-4"><p style="font-size:40px">⚽</p><h1 class="mt-2">Вход</h1><p class="text-sm text-muted mt-2">Мок-код: <strong class="accent">123456</strong></p></div>';
+
+      h += '<div id="lp"><label class="label">Телефон</label><input id="l-phone" type="tel" class="input mb-4" placeholder="+7 900 000-00-00" />';
+      h += '<button onclick="lSend()" class="btn btn-primary">Получить код</button></div>';
+
+      h += '<div id="lc" class="hidden"><label class="label">Код из SMS</label><input id="l-code" type="text" inputmode="numeric" class="input mb-4" />';
+      h += '<button onclick="lVerify()" class="btn btn-primary">Войти</button>';
+      h += '<button onclick="document.getElementById(\'lc\').classList.add(\'hidden\');document.getElementById(\'lp\').classList.remove(\'hidden\')" class="btn btn-ghost mt-2 btn-sm">Изменить номер</button></div>';
+
+      h += '<div id="ln" class="hidden"><label class="label">Ник</label><input id="l-nick" type="text" class="input mb-4" placeholder="Дворовый10" />';
+      h += '<button onclick="lReg()" class="btn btn-primary">Создать</button></div>';
+
+      h += '<p id="l-err" class="text-sm text-center mt-4 hidden" style="color:var(--red)"></p></div>';
+      render(h);
+
+      var _p='',_r=refCode;
+      window.lSend=function(){_p=document.getElementById('l-phone').value.replace(/\D/g,'');if(_p.length<10)return;document.getElementById('lp').classList.add('hidden');document.getElementById('lc').classList.remove('hidden');TMA.haptic.selection();};
+      window.lVerify=function(){var c=document.getElementById('l-code').value.trim();if(c!==ZARUBA_MOCK_SMS_CODE){document.getElementById('l-err').textContent='Код: '+ZARUBA_MOCK_SMS_CODE;document.getElementById('l-err').classList.remove('hidden');return;}mockDb.findUserByPhone(_p).then(function(u){if(u){ZarubaSession.set(u.id);Router.navigate('/');return;}document.getElementById('lc').classList.add('hidden');document.getElementById('ln').classList.remove('hidden');});};
+      window.lReg=function(){var n=document.getElementById('l-nick').value.trim();if(n.length<2)return;mockDb.createUser(_p,n,_r).then(function(u){ZarubaSession.set(u.id);TMA.haptic.notification('success');Router.navigate('/');});};
+    });
+
+    // ─── SHOP ─────────────────────────────────────
+    Router.register('/shop', function (root) {
+      var uid = ZarubaSession.get();
+      function renderShop(user) {
+        var h = '<div class="page"><h1 class="mb-4">Магазин</h1>';
+        if (user) {
+          h += '<p class="text-sm text-muted mb-4">Баланс: <strong class="accent">🪙 ' + user.chips + '</strong></p>';
+          ZARUBA_SHOP_ITEMS.forEach(function (item) {
+            var owned = user.purchases.indexOf(item.id) !== -1;
+            var can = !owned && user.chips >= item.price;
+            h += '<div class="card"><div class="flex items-center justify-between"><div><p style="font-weight:700">' + item.title + '</p><p class="text-xs text-muted">' + item.description + '</p></div>';
+            h += '<span class="tag tag-accent">🪙 ' + item.price + '</span></div>';
+            if (owned) h += '<p class="text-xs mt-2" style="color:var(--green)">✓ Куплено</p>';
+            else h += '<button onclick="buyItem(\'' + item.id + '\')" class="btn btn-ghost btn-sm mt-2" style="' + (can ? '' : 'opacity:0.4;pointer-events:none') + '">Забрать</button>';
+            h += '</div>';
+          });
+        } else {
+          h += '<div class="card text-center" style="padding:32px"><p class="text-muted">Войди, чтобы тратить</p><a href="#/login" class="btn btn-primary mt-4" style="width:auto;display:inline-flex;padding:0 24px;text-decoration:none">Войти</a></div>';
+        }
+        h += '</div>' + nav('shop');
+        render(h);
+      }
+      if (uid) mockDb.getUser(uid).then(renderShop); else renderShop(null);
+      window.buyItem = function(id) {
+        if (!uid) return;
+        mockDb.purchaseShopItem(uid, id).then(function(){TMA.haptic.notification('success');mockDb.getUser(uid).then(renderShop);}).catch(function(e){if(typeof zarubaToast==='function') zarubaToast(e.message,'info',3000);});
+      };
+    });
+
+    // ─── PROFILE ──────────────────────────────────
+    Router.register('/profile', function (root, qs) {
+      var uid = qs.id || ZarubaSession.get();
+      if (!uid) { Router.navigate('/login'); return; }
+      mockDb.getUser(uid).then(function (u) {
+        if (!u) { render('<div class="page text-center text-muted">Не найден</div>'); return; }
+        var isMe = ZarubaSession.get() === uid;
+        var prog = zarubaCharismaProgress(u.charismaTotal);
+
+        var h = '<div class="page">';
+        // User card
+        h += '<div class="card text-center" style="padding:24px">';
+        h += '<div style="width:56px;height:56px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:22px;font-weight:800;color:var(--accent)">' + u.nickname.charAt(0) + '</div>';
+        h += '<p style="font-weight:700;font-size:18px;margin-top:12px">' + u.nickname + '</p>';
+        h += '<p class="text-xs text-muted">' + zarubaCharismaStatus(u.charismaTotal) + '</p>';
+        h += '<div class="flex gap-2 justify-between mt-4" style="justify-content:center"><span class="tag tag-accent">🪙 ' + u.chips + '</span><span class="tag tag-green">✨ ' + u.charismaTotal + '</span></div>';
+        h += '</div>';
+
+        // Progress
+        h += '<div class="card"><p class="text-xs text-muted mb-2">До следующего уровня</p>';
+        h += '<div style="height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden"><div style="height:100%;border-radius:3px;background:var(--accent);width:' + Math.min(100, prog.pct) + '%"></div></div>';
+        h += '<p class="text-xs text-muted mt-2">' + Math.round(prog.current) + ' / ' + prog.next + ' XP</p></div>';
+
+        // Referral
+        if (isMe && u.referralCode) {
+          h += '<div class="card"><p style="font-weight:700">🤝 Реферальная ссылка</p><p class="text-xs text-muted mt-2">Ты: +50, друг: +75</p>';
+          h += '<div class="flex gap-2 mt-3"><input id="ref-link" class="input" style="flex:1;height:38px;font-size:12px" readonly value="' + location.origin + '/miniapp.html#/login?ref=' + u.referralCode + '" />';
+          h += '<button onclick="copyRef()" class="btn btn-ghost btn-sm" style="width:auto;padding:0 14px">Копировать</button></div>';
+          h += '<p class="text-xs text-muted mt-2">Приглашено: ' + u.referredCount + '</p></div>';
+        }
+
+        // Achievements
+        if (u.achievements.length) {
+          var ACH = {first_zaruba:['🏟','Заруба'],five_wins:['👑','5 побед'],ten_fans:['📣','10 фанатов'],hat_trick:['⚽','Хет-трик'],first_fan:['❤️','Фанат'],first_referral:['🤝','Реферал']};
+          h += '<div class="card"><p class="text-xs text-muted mb-3">Ачивки</p><div class="flex gap-2" style="flex-wrap:wrap">';
+          u.achievements.forEach(function(a){var m=ACH[a]||['⭐',a];h+='<span class="tag tag-muted">'+m[0]+' '+m[1]+'</span>';});
+          h += '</div></div>';
+        }
+
+        if (isMe) h += '<button onclick="doLogout()" class="btn btn-ghost mt-4">Выйти</button>';
+        h += '</div>' + nav('profile');
+        render(h);
+      });
+
+      window.copyRef = function() {
+        var el = document.getElementById('ref-link');
+        if (el) { navigator.clipboard.writeText(el.value).then(function(){TMA.haptic.notification('success');}); }
+      };
+      window.doLogout = function() { ZarubaSession.clear(); Router.navigate('/'); };
+    });
+
+    // ─── JUDGE ────────────────────────────────────
     Router.register('/judge', function (root, qs) {
       var uid = ZarubaSession.get();
-      if (!uid) { Router.navigate('/login'); return; }
-      if (!qs.id) { Router.navigate('/'); return; }
+      if (!uid || !qs.id) { Router.navigate('/'); return; }
 
       mockDb.getZaruba(qs.id).then(function (z) {
-        if (!z || z.refereeId !== uid) {
-          renderShell('<div class="px-4 pt-6 text-center text-zinc-400">Только судья</div>');
-          return;
-        }
+        if (!z || z.refereeId !== uid) { render('<div class="page text-center text-muted">Только судья</div>'); return; }
 
-        var html = '<div class="px-4 pt-4 pb-8 tma-view">';
-        html += '<h1 class="font-zb-display text-2xl font-bold mb-1">Судья</h1>';
-        html += '<p class="font-zb-display text-5xl font-bold text-center text-[#8ea2ff] my-4 tabular-nums">' + z.scoreA + ' : ' + z.scoreB + '</p>';
-        html += '<p class="text-center text-xs text-zinc-500 mb-6">Фолы: ' + z.fouls + '</p>';
+        var h = '<div class="page">';
+        h += '<div class="text-center"><h1>Судья</h1>';
+        h += '<p class="score mono">' + z.scoreA + ' : ' + z.scoreB + '</p>';
+        h += '<p class="text-xs text-muted">Фолы: ' + z.fouls + '</p></div>';
 
-        if (z.status === 'scheduled') {
-          html += '<button onclick="tmaJudgeStart()" class="w-full rounded-xl bg-[#8ea2ff] py-3.5 text-[#0f1220] font-bold text-sm mb-4">Начать матч</button>';
-        }
+        if (z.status === 'scheduled') h += '<button onclick="jStart()" class="btn btn-primary mt-4">Начать матч</button>';
 
         if (z.status === 'live') {
-          // Goal
-          html += '<div class="rounded-2xl bg-white/5 border border-white/10 p-4 mb-3">';
-          html += '<p class="text-sm font-bold text-white mb-3">Гол</p>';
-          html += '<div class="flex gap-2 mb-3">';
-          html += '<button onclick="tmaGoalTeam(this,\'A\')" class="flex-1 rounded-xl border py-2.5 text-sm font-bold border-[#8ea2ff] bg-[#8ea2ff]/10 text-[#8ea2ff] tma-gteam" data-team="A">Команда А</button>';
-          html += '<button onclick="tmaGoalTeam(this,\'B\')" class="flex-1 rounded-xl border py-2.5 text-sm font-bold border-white/10 bg-white/5 text-zinc-400 tma-gteam" data-team="B">Команда Б</button>';
-          html += '</div>';
-          html += '<button onclick="tmaGoal()" class="w-full rounded-xl bg-emerald-500 py-3 text-white font-bold text-sm">+1 Гол</button>';
-          html += '</div>';
-
-          // Foul
-          html += '<button onclick="tmaFoul()" class="w-full rounded-xl border border-red-500 py-3 text-red-400 font-bold text-sm mb-3">Фол</button>';
-
-          // Finish
-          html += '<button onclick="tmaFinish()" class="w-full rounded-xl bg-red-600 py-3 text-white font-bold text-sm">Завершить</button>';
+          h += '<div class="card mt-4"><p style="font-weight:700;margin-bottom:8px">Гол</p>';
+          h += '<div class="flex gap-2 mb-3">';
+          h += '<button onclick="jTeam(this,\'A\')" class="btn btn-ghost btn-sm jt" style="flex:1" data-t="A">Команда А</button>';
+          h += '<button onclick="jTeam(this,\'B\')" class="btn btn-ghost btn-sm jt" style="flex:1" data-t="B">Команда Б</button>';
+          h += '</div>';
+          h += '<button onclick="jGoal()" class="btn btn-primary btn-sm">+1 Гол</button></div>';
+          h += '<button onclick="jFoul()" class="btn btn-ghost mt-2" style="border-color:var(--red);color:var(--red)">Фол</button>';
+          h += '<button onclick="jFinish()" class="btn btn-danger mt-2">Завершить</button>';
         }
 
-        if (z.status === 'finished') {
-          html += '<p class="text-center text-sm font-bold text-emerald-400">Матч завершён</p>';
-        }
+        if (z.status === 'finished') h += '<p class="text-center mt-4" style="color:var(--green);font-weight:700">Завершён</p>';
+        h += '</div>';
+        render(h);
 
-        html += '</div>';
-        renderShell(html);
-
-        var _goalTeam = 'A';
-        window.tmaGoalTeam = function (btn, team) {
-          _goalTeam = team;
-          document.querySelectorAll('.tma-gteam').forEach(function (b) {
-            b.className = 'flex-1 rounded-xl border py-2.5 text-sm font-bold border-white/10 bg-white/5 text-zinc-400 tma-gteam';
-          });
-          btn.className = 'flex-1 rounded-xl border py-2.5 text-sm font-bold border-[#8ea2ff] bg-[#8ea2ff]/10 text-[#8ea2ff] tma-gteam';
-          TMA.haptic.selection();
+        var _gt = 'A';
+        window.jTeam = function(btn, t) { _gt=t; document.querySelectorAll('.jt').forEach(function(b){b.style.background='';b.style.color='';b.style.borderColor='';}); btn.style.background='var(--accent-soft)'; btn.style.color='var(--accent)'; btn.style.borderColor='var(--accent)'; TMA.haptic.selection(); };
+        window.jStart = function() { mockDb.startLive(z.id, uid).then(function(){TMA.haptic.notification('success');Router.resolve();}); };
+        window.jGoal = function() {
+          var tid = _gt==='A' ? z.teamAId : z.teamBId;
+          if (!tid) return;
+          mockDb.listMembers(tid).then(function(m){var c=m.filter(function(x){return x.confirmed;});if(!c.length)return;mockDb.addGoal({zarubaId:z.id,refereeId:uid,team:_gt,scorerId:c[0].userId}).then(function(){TMA.haptic.notification('success');Router.resolve();});});
         };
-
-        window.tmaJudgeStart = function () {
-          mockDb.startLive(z.id, uid).then(function () {
-            TMA.haptic.notification('success');
-            Router.resolve();
-          });
-        };
-
-        window.tmaGoal = function () {
-          // Pick first confirmed member of the team
-          var teamId = _goalTeam === 'A' ? z.teamAId : z.teamBId;
-          if (!teamId) return;
-          mockDb.listMembers(teamId).then(function (members) {
-            var confirmed = members.filter(function (m) { return m.confirmed; });
-            if (confirmed.length === 0) { if (typeof zarubaToast === 'function') zarubaToast('Нет игроков', 'info'); return; }
-            var scorer = confirmed[0].userId;
-            mockDb.addGoal({ zarubaId: z.id, refereeId: uid, team: _goalTeam, scorerId: scorer }).then(function () {
-              TMA.haptic.notification('success');
-              if (typeof zarubaToast === 'function') zarubaToast('Гол!', 'win', 2000);
-              Router.resolve();
-            });
-          });
-        };
-
-        window.tmaFoul = function () {
-          mockDb.addFoul(z.id, uid).then(function () {
-            TMA.haptic.impact('heavy');
-            Router.resolve();
-          });
-        };
-
-        window.tmaFinish = function () {
-          mockDb.finishMatch(z.id, uid).then(function () {
-            TMA.haptic.notification('success');
-            if (typeof zarubaToast === 'function') zarubaToast('Матч завершён!', 'xp', 3000);
-            Router.resolve();
-          });
-        };
+        window.jFoul = function() { mockDb.addFoul(z.id, uid).then(function(){TMA.haptic.impact('heavy');Router.resolve();}); };
+        window.jFinish = function() { mockDb.finishMatch(z.id, uid).then(function(){TMA.haptic.notification('success');Router.resolve();}); };
       });
     });
 
-    // ─── Start ────────────────────────────────────────
+    // ─── START ────────────────────────────────────
     Router.init('app');
   </script>
 </body>
