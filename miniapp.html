@@ -161,7 +161,7 @@
             h += '<h2 class="mb-4">Сейчас играют</h2>';
             live.forEach(function (z) {
               h += '<a href="#/zaruba?id=' + z.id + '" class="card flex items-center justify-between" style="text-decoration:none;border-left:3px solid var(--red)">';
-              h += '<div><p class="text-sm text-muted">' + zarubaSportLabel(z.sport) + '</p><p style="font-weight:700;margin-top:2px">' + locN(z.locationId) + '</p></div>';
+              h += '<div><p class="text-sm text-muted">' + zarubaSportLabel(z.sport) + '</p><p style="font-weight:700;color:var(--text);margin-top:2px">' + locN(z.locationId) + '</p></div>';
               h += '<span class="tag tag-live">● LIVE</span></a>';
             });
           }
@@ -175,7 +175,7 @@
             h += '<h2 class="mb-4">Скоро</h2>';
             upcoming.forEach(function (z) {
               h += '<a href="#/zaruba?id=' + z.id + '" class="card" style="text-decoration:none">';
-              h += '<div class="flex items-center justify-between"><p style="font-weight:700">' + locN(z.locationId) + '</p><span class="tag tag-muted">' + zarubaFormatDateTime(z.startsAt) + '</span></div>';
+              h += '<div class="flex items-center justify-between"><p style="font-weight:700;color:var(--text)">' + locN(z.locationId) + '</p><span class="tag tag-muted">' + zarubaFormatDateTime(z.startsAt) + '</span></div>';
               h += '<p class="text-sm text-muted mt-2">' + (z.description || '').slice(0, 80) + '</p></a>';
             });
           }
@@ -186,7 +186,7 @@
             h += '<h2 class="mt-4 mb-4">Последние</h2>';
             finished.forEach(function (z) {
               h += '<a href="#/zaruba?id=' + z.id + '" class="card flex items-center justify-between" style="text-decoration:none">';
-              h += '<div><p style="font-weight:700">' + locN(z.locationId) + '</p><p class="text-xs text-muted">' + zarubaFormatDateTime(z.startsAt) + '</p></div>';
+              h += '<div><p style="font-weight:700;color:var(--text)">' + locN(z.locationId) + '</p><p class="text-xs text-muted">' + zarubaFormatDateTime(z.startsAt) + '</p></div>';
               h += '<span class="mono" style="font-weight:700;font-size:18px">' + z.scoreA + ':' + z.scoreB + '</span></a>';
             });
           }
@@ -219,7 +219,7 @@
             : z.status==='finished' ? '<span class="tag tag-muted">Итог</span>'
             : '<span class="tag tag-accent">Скоро</span>';
           h += '<a href="#/zaruba?id=' + z.id + '" class="card" style="text-decoration:none">';
-          h += '<div class="flex items-center justify-between"><p style="font-weight:700">' + locN(z.locationId) + '</p>' + tag + '</div>';
+          h += '<div class="flex items-center justify-between"><p style="font-weight:700;color:var(--text)">' + locN(z.locationId) + '</p>' + tag + '</div>';
           if (z.status === 'finished') h += '<p class="mono mt-2" style="font-weight:700;font-size:20px">' + z.scoreA + ' : ' + z.scoreB + '</p>';
           else h += '<p class="text-sm text-muted mt-2">' + zarubaFormatDateTime(z.startsAt) + '</p>';
           h += '</a>';
@@ -361,7 +361,7 @@
           ZARUBA_SHOP_ITEMS.forEach(function (item) {
             var owned = user.purchases.indexOf(item.id) !== -1;
             var can = !owned && user.chips >= item.price;
-            h += '<div class="card"><div class="flex items-center justify-between"><div><p style="font-weight:700">' + item.title + '</p><p class="text-xs text-muted">' + item.description + '</p></div>';
+            h += '<div class="card"><div class="flex items-center justify-between"><div><p style="font-weight:700;color:var(--text)">' + item.title + '</p><p class="text-xs text-muted">' + item.description + '</p></div>';
             h += '<span class="tag tag-accent">🪙 ' + item.price + '</span></div>';
             if (owned) h += '<p class="text-xs mt-2" style="color:var(--green)">✓ Куплено</p>';
             else h += '<button onclick="buyItem(\'' + item.id + '\')" class="btn btn-ghost btn-sm mt-2" style="' + (can ? '' : 'opacity:0.4;pointer-events:none') + '">Забрать</button>';
@@ -405,7 +405,7 @@
 
         // Referral
         if (isMe && u.referralCode) {
-          h += '<div class="card"><p style="font-weight:700">🤝 Реферальная ссылка</p><p class="text-xs text-muted mt-2">Ты: +50, друг: +75</p>';
+          h += '<div class="card"><p style="font-weight:700;color:var(--text)">🤝 Реферальная ссылка</p><p class="text-xs text-muted mt-2">Ты: +50, друг: +75</p>';
           h += '<div class="flex gap-2 mt-3"><input id="ref-link" class="input" style="flex:1;height:38px;font-size:12px" readonly value="' + location.origin + '/miniapp.html#/login?ref=' + u.referralCode + '" />';
           h += '<button onclick="copyRef()" class="btn btn-ghost btn-sm" style="width:auto;padding:0 14px">Копировать</button></div>';
           h += '<p class="text-xs text-muted mt-2">Приглашено: ' + u.referredCount + '</p></div>';
