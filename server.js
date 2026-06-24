@@ -558,10 +558,10 @@ function processTelegramUpdate(update) {
       inline_keyboard: [[{ text: '⚽ Открыть Zaruba', web_app: { url: 'https://' + DOMAIN + '/miniapp.html' } }]]
     };
     sendTelegramMessage(chatId,
-      '⚽ <b>Zaruba</b> — уличная спортивная платформа\n\n' +
-      'Собирай банды, зарубайся дворами и районами!\n\n' +
-      '🪙 Баланс: <b>' + (user ? user.chips : 0) + '</b>\n' +
-      '✨ Харизма: <b>' + (user ? user.charismaTotal : 0) + ' XP</b>',
+      '⚽ <b>Заруба</b>\n\n' +
+      'Тут рубятся свои. Забивай, приглашай, снимай видосы — и срубай чипсеки.\n\n' +
+      '🪙 <b>' + (user ? user.chips : 100) + ' чипсеков</b>\n' +
+      '✨ <b>' + (user ? user.charismaTotal : 0) + ' XP</b>',
       keyboard
     );
   }
