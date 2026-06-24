@@ -532,79 +532,112 @@ function parseZaruba(row) {
   };
 }
 
-// ─── Telegram Bot Webhook ─────────────────────────────
-app.post('/api/telegram/webhook', (req, res) => {
-  const update = req.body;
-  if (update.message) {
-    const msg = update.message;
-    const chatId = msg.chat.id;
-    const text = (msg.text || '').trim();
-    const from = msg.from;
+// ─── Telegram Bot — Long Polling via Tor ──────────────
+let tgOffset = 0;
 
-    if (text === '/start') {
-      // Find or create user
-      const phone = 'tg_' + from.id;
-      let user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
-      if (!user) {
-        const id = uuid();
-        const nickname = from.first_name + (from.last_name ? ' ' + from.last_name : '');
-        const d = new Date().toISOString().slice(0, 10);
-        const myRefCode = generateToken();
-        db.prepare(`INSERT INTO users (id, phone, nickname, dailyDate, referralCode, createdAt) VALUES (?, ?, ?, ?, ?, ?)`)
-          .run(id, phone, nickname, d, myRefCode, now());
-        user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
-      }
+function processTelegramUpdate(update) {
+  if (!update.message) return;
+  const msg = update.message;
+  const chatId = msg.chat.id;
+  const text = (msg.text || '').trim();
+  const from = msg.from;
 
-      // Send Mini App button
-      const keyboard = {
-        inline_keyboard: [[{ text: '⚽ Открыть Zaruba', web_app: { url: 'https://' + DOMAIN + '/miniapp.html' } }]]
-      };
+  if (text === '/start') {
+    const phone = 'tg_' + from.id;
+    let user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+    if (!user) {
+      const id = uuid();
+      const nickname = from.first_name + (from.last_name ? ' ' + from.last_name : '');
+      const d = new Date().toISOString().slice(0, 10);
+      const myRefCode = generateToken();
+      db.prepare(`INSERT INTO users (id, phone, nickname, dailyDate, referralCode, createdAt) VALUES (?, ?, ?, ?, ?, ?)`)
+        .run(id, phone, nickname, d, myRefCode, now());
+      user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    }
+    const keyboard = {
+      inline_keyboard: [[{ text: '⚽ Открыть Zaruba', web_app: { url: 'https://' + DOMAIN + '/miniapp.html' } }]]
+    };
+    sendTelegramMessage(chatId,
+      '⚽ <b>Zaruba</b> — уличная спортивная платформа\n\n' +
+      'Собирай банды, зарубайся дворами и районами!\n\n' +
+      '🪙 Баланс: <b>' + (user ? user.chips : 0) + '</b>\n' +
+      '✨ Харизма: <b>' + (user ? user.charismaTotal : 0) + ' XP</b>',
+      keyboard
+    );
+  }
 
+  if (text === '/help') {
+    sendTelegramMessage(chatId,
+      '📋 Команды:\n/start — Открыть Zaruba\n/help — Помощь\n/profile — Мой профиль\n/top — Топ района'
+    );
+  }
+
+  if (text === '/profile') {
+    const phone = 'tg_' + from.id;
+    const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+    if (user) {
       sendTelegramMessage(chatId,
-        '⚽ <b>Zaruba</b> — уличная спортивная платформа\n\n' +
-        'Собирай банды, зарубайся дворами и районами!\n\n' +
-        '🪙 Баланс: <b>' + (user ? user.chips : 0) + '</b>\n' +
-        '✨ Харизма: <b>' + (user ? user.charismaTotal : 0) + ' XP</b>',
-        keyboard
+        '👤 <b>' + user.nickname + '</b>\n\n🪙 Чипсеки: ' + user.chips +
+        '\n✨ Харизма: ' + user.charismaTotal + ' XP\n🏆 Победы: ' + user.wins +
+        '\n📣 Фанаты: ' + user.fansTotal
       );
-    }
-
-    if (text === '/help') {
-      sendTelegramMessage(chatId,
-        '📋 Команды:\n' +
-        '/start — Открыть Zaruba\n' +
-        '/help — Помощь\n' +
-        '/profile — Мой профиль\n' +
-        '/top — Топ района'
-      );
-    }
-
-    if (text === '/profile') {
-      const phone = 'tg_' + from.id;
-      const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
-      if (user) {
-        sendTelegramMessage(chatId,
-          '👤 <b>' + user.nickname + '</b>\n\n' +
-          '🪙 Чипсеки: ' + user.chips + '\n' +
-          '✨ Харизма: ' + user.charismaTotal + ' XP\n' +
-          '🏆 Победы: ' + user.wins + '\n' +
-          '📣 Фанаты: ' + user.fansTotal
-        );
-      }
-    }
-
-    if (text === '/top') {
-      const leaders = db.prepare('SELECT nickname, charismaTotal FROM users ORDER BY charismaTotal DESC LIMIT 5').all();
-      let topText = '🏆 <b>Топ района</b>\n\n';
-      const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
-      leaders.forEach((u, i) => {
-        topText += medals[i] + ' ' + u.nickname + ' — ' + u.charismaTotal + ' XP\n';
-      });
-      sendTelegramMessage(chatId, topText);
     }
   }
+
+  if (text === '/top') {
+    const leaders = db.prepare('SELECT nickname, charismaTotal FROM users ORDER BY charismaTotal DESC LIMIT 5').all();
+    let topText = '🏆 <b>Топ района</b>\n\n';
+    const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
+    leaders.forEach((u, i) => { topText += medals[i] + ' ' + u.nickname + ' — ' + u.charismaTotal + ' XP\n'; });
+    sendTelegramMessage(chatId, topText);
+  }
+}
+
+function pollTelegram() {
+  if (!TELEGRAM_BOT_TOKEN) return;
+  const { SocksProxyAgent } = require('socks-proxy-agent');
+  const https = require('https');
+  const agent = new SocksProxyAgent('socks5h://127.0.0.1:9050');
+
+  const url = '/bot' + TELEGRAM_BOT_TOKEN + '/getUpdates?offset=' + tgOffset + '&timeout=30';
+  const options = {
+    hostname: 'api.telegram.org',
+    port: 443,
+    path: url,
+    method: 'GET',
+    agent: agent,
+    timeout: 40000,
+  };
+
+  const req = https.request(options, (res) => {
+    let body = '';
+    res.on('data', (c) => body += c);
+    res.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        if (data.ok && data.result) {
+          data.result.forEach((u) => {
+            tgOffset = u.update_id + 1;
+            processTelegramUpdate(u);
+          });
+        }
+      } catch (e) {}
+      setTimeout(pollTelegram, 1000);
+    });
+  });
+  req.on('error', () => setTimeout(pollTelegram, 5000));
+  req.on('timeout', () => { req.destroy(); setTimeout(pollTelegram, 3000); });
+  req.end();
+}
+
+// Keep webhook endpoint for backward compat
+app.post('/api/telegram/webhook', (req, res) => {
+  processTelegramUpdate(req.body);
   res.json({ ok: true });
 });
+
+// Start polling after server is ready
+setTimeout(pollTelegram, 2000);
 
 function sendTelegramMessage(chatId, text, keyboard) {
   if (!TELEGRAM_BOT_TOKEN) return;
