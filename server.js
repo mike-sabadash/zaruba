@@ -615,11 +615,30 @@ function sendTelegramMessage(chatId, text, keyboard) {
   };
   if (keyboard) payload.reply_markup = keyboard;
 
-  fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage', {
+  const { SocksProxyAgent } = require('socks-proxy-agent');
+  const https = require('https');
+  const agent = new SocksProxyAgent('socks5h://127.0.0.1:9050');
+  const data = JSON.stringify(payload);
+  const options = {
+    hostname: 'api.telegram.org',
+    port: 443,
+    path: '/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage',
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }).catch(() => {});
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
+    agent: agent,
+    timeout: 15000,
+  };
+  const req = https.request(options, (res) => {
+    let body = '';
+    res.on('data', (c) => body += c);
+    res.on('end', () => {
+      if (res.statusCode !== 200) console.log('TG send error:', res.statusCode, body.slice(0, 200));
+    });
+  });
+  req.on('error', (e) => console.log('TG send failed:', e.message));
+  req.on('timeout', () => { req.destroy(); console.log('TG send timeout'); });
+  req.write(data);
+  req.end();
 }
 
 // ─── Seed check & start ───────────────────────────────
