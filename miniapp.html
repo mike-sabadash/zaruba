@@ -130,15 +130,6 @@
 
     var app = document.getElementById('app');
     function render(html) { app.innerHTML = html; }
-    window.toggleHero = function() {
-      var cur = parseInt(localStorage.getItem('zaruba_hero') || '0');
-      var next = (cur + 1) % 2;
-      localStorage.setItem('zaruba_hero', next);
-      var heroes = ['assets/local/hero-header2.png', 'assets/local/hero-header1.png'];
-      var img = document.getElementById('hero-img');
-      if (img) img.src = heroes[next];
-      TMA.haptic.selection();
-    };
 
     function nav(active) {
       var uid = ZarubaSession.get();
@@ -159,11 +150,8 @@
           function locN(id) { var l = locs.find(function(x){return x.id===id;}); return l ? l.name : '—'; }
 
           var h = '<div class="page">';
-          // Hero banner (click to toggle)
-          var heroIdx = parseInt(localStorage.getItem('zaruba_hero') || '0');
-          var heroes = ['assets/local/hero-header2.png', 'assets/local/hero-header1.png'];
-          var heroSrc = heroes[heroIdx % heroes.length];
-          h += '<div onclick="toggleHero()" style="margin:-20px -16px 16px;border-radius:0;overflow:hidden;cursor:pointer"><img id="hero-img" src="' + heroSrc + '" alt="Zaruba" style="width:100%;display:block" /></div>';
+          // Hero banner
+          h += '<div style="margin:-20px -16px 16px;overflow:hidden"><img src="assets/local/hero-header2.png" alt="Zaruba" style="width:100%;height:auto;display:block;object-fit:cover" /></div>';
           // Header
           h += '<div class="flex items-center justify-between mb-4">';
           if (user) h += '<span class="tag tag-accent">🪙 ' + user.chips + '</span>';
