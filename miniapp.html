@@ -150,9 +150,10 @@
           function locN(id) { var l = locs.find(function(x){return x.id===id;}); return l ? l.name : '—'; }
 
           var h = '<div class="page">';
+          // Hero banner
+          h += '<div style="margin:-20px -16px 16px;border-radius:0;overflow:hidden"><img src="assets/local/hero-header2.png" alt="Zaruba" style="width:100%;display:block" /></div>';
           // Header
           h += '<div class="flex items-center justify-between mb-4">';
-          h += '<h1>Zaruba</h1>';
           if (user) h += '<span class="tag tag-accent">🪙 ' + user.chips + '</span>';
           else h += '<a href="#/login" class="tag tag-accent" style="text-decoration:none">Войти</a>';
           h += '</div>';
