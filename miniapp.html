@@ -143,12 +143,10 @@
     .pill:hover {
       border-color: #f20b88;
       color: #f20b88;
-      box-shadow: 0 0 8px rgba(242,11,136,0.3);
     }
     .pill.active {
       border-color: #f20b88;
       color: #f20b88;
-      box-shadow: 0 0 12px rgba(242,11,136,0.4);
     }
     .mode-hint {
       text-align: center;
@@ -540,8 +538,8 @@
   </header>
 
   <div class="modes">
-    <button class="pill" data-mode="fast">Fast</button>
-    <button class="pill active" data-mode="hard">Hard</button>
+    <button class="pill active" data-mode="fast">Fast</button>
+    <button class="pill" data-mode="hard">Hard</button>
   </div>
 
   <h1 class="title">Выбери во что зарубиться</h1>
@@ -561,7 +559,7 @@
     </div>
   </div>
 
-  <div id="hardFilters">
+  <div id="hardFilters" style="display:none">
     <div class="smart-filters">
       <!-- Пол -->
       <div class="filter-tile" id="tileGender" data-type="gender">
@@ -609,7 +607,7 @@
   </div>
 
   <!-- Fast панель -->
-  <div id="fastPanel" class="fast-panel">
+  <div id="fastPanel" class="fast-panel show">
     <button class="fast-geo-btn" id="fastGeoBtn">📍 Выбрать локацию</button>
     <div id="fastAddressContainer"></div>
   </div>
@@ -816,7 +814,7 @@
     });
 
     // --- Карта, геолокация ---
-    var currentMode = "hard";
+    var currentMode = "fast";
     var selectedSport = "football";
     var yandexMap = null, currentMarker = null, currentCoords = null, currentAddress = "";
     var geoOverlay = document.getElementById("geoOverlay");
