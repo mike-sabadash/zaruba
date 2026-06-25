@@ -40,13 +40,9 @@
       text-align: center;
     }
     .header {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 12px;
+      display: flex;
+      justify-content: center;
       padding: 0 0 20px 0;
-      margin-top: 0;
-      text-align: left;
     }
     .profile {
       display: inline-flex;
@@ -540,21 +536,7 @@
 <body>
 <div class="shell">
   <header class="header">
-    <div class="profile">
-      <span class="avatar" aria-hidden="true"></span>
-      <span class="name">ЛЕХА ЛЮТЫЙ</span>
-    </div>
     <div class="top-logo" aria-label="Zaruba"></div>
-    <div class="actions">
-      <span class="heart" aria-hidden="true"></span>
-      <span class="bell-wrap">
-        <svg class="bell-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
-          <path d="M15.6 17.8H8.4c-1.7 0-2.7 0-3.1-.5-.5-.6-.2-1.4.3-2.9l.4-1.1c.3-.8.5-1.4.5-2.3 0-2.8 2.2-5 5-5s5 2.2 5 5c0 .9.2 1.5.5 2.3l.4 1.1c.5 1.5.8 2.3.3 2.9-.4.5-1.4.5-3.1.5Z"/>
-          <path d="M10 20a2 2 0 0 0 4 0"/>
-        </svg>
-        <span class="bell-num">2</span>
-      </span>
-    </div>
   </header>
 
   <h1 class="title">Забить зарубу</h1>
