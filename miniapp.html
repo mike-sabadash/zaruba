@@ -138,6 +138,7 @@
   <script src="js/gamify.js"></script>
   <script src="js/router.js"></script>
   <script>
+    try {
     TMA.ready();
     var tgUser = TMA.getUser();
 
@@ -147,10 +148,13 @@
           if (u) return u;
           var name = tgUser.firstName + (tgUser.lastName ? ' ' + tgUser.lastName : '');
           return mockDb.createUser('tg_' + tgUser.id, name);
+        }).catch(function(e) {
+          console.error('ensureUser tg error:', e);
+          return null;
         });
       }
       var s = ZarubaSession.get();
-      if (s) return mockDb.getUser(s);
+      if (s) return mockDb.getUser(s).catch(function(){ return null; });
       return Promise.resolve(null);
     }
 
@@ -188,6 +192,14 @@
           var hasData = zarubas.length > 0;
 
           function locN(id) { var l = locs.find(function(x){return x.id===id;}); return l ? l.name : '—'; }
+          function timeUntil(iso) {
+            var diff = new Date(iso) - new Date();
+            if (diff <= 0) return 'Скоро';
+            var m = Math.floor(diff / 60000);
+            var h = Math.floor(m / 60);
+            m = m % 60;
+            return h > 0 ? h + 'ч ' + m + 'мин' : m + 'мин';
+          }
 
           var h = '<div class="page">';
 
@@ -759,6 +771,9 @@
 
     // ─── START ────────────────────────────────────
     Router.init('app');
+    } catch(err) {
+      document.getElementById('app').innerHTML = '<div style="padding:20px;color:#f5f5f5;font-family:monospace"><h2 style="color:#f20b88">Ошибка</h2><pre style="white-space:pre-wrap;font-size:12px;margin-top:8px">' + err.message + '</pre></div>';
+    }
   </script>
 </body>
 </html>
