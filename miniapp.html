@@ -106,8 +106,8 @@
     .bonus-banner { background: linear-gradient(135deg, var(--accent), #ff6b35); border-radius: 12px; padding: 14px 16px; margin-top: 16px; text-align: center; }
     .bonus-banner p { color: #fff; font-weight: 700; font-size: 14px; }
 
-    .hero-active { text-align: center; padding: 24px 0 16px; }
-    .hero-active h1 { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 0.06em; color: var(--text); line-height: 1; }
+    .hero-active { text-align: center; padding: 20px 0 16px; }
+    .hero-active h1 { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 0.02em; color: var(--text-2); line-height: 1.1; }
     .timer { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: var(--accent); letter-spacing: 0.04em; margin-top: 8px; }
     .players-waiting { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
     .player-dot { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 12px; margin-left: -8px; }
@@ -246,11 +246,7 @@
             h += '</div>';
           } else {
             h += '<div class="hero-active">';
-            h += '<h1>СЕЙЧАС — ТВОЙ ХОД!</h1>';
-            if (nextZaruba) {
-              h += '<p class="timer">' + timeUntil(nextZaruba.startsAt) + '</p>';
-              h += '<p class="text-xs text-muted">до старта</p>';
-            }
+            h += '<h1>Выбери во что зарубиться</h1>';
             h += '</div>';
           }
 
@@ -270,11 +266,8 @@
           // CTA
           h += '<button onclick="quickCreate()" class="cta-main">ЗАБИТЬ ЗАРУБУ</button>';
 
-          // Secondary actions
-          h += '<div class="secondary-actions">';
-          h += '<button onclick="inviteFriend()">📤 Пригласить друга</button>';
-          h += '<button onclick="videoBonus()">🎥 Я снял видео!</button>';
-          h += '</div>';
+          // Secondary action
+          h += '<button onclick="inviteFriend()" class="btn btn-ghost mt-3" style="font-size:13px;gap:6px">📤 Пригласить друга</button>';
 
           // Last match
           if (lastFinished) {
