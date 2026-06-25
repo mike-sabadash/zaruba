@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Zaruba — Забить зарубу</title>
   <style>
+    @font-face {
+      font-family: 'BatmanForeverCyr';
+      src: url('assets/local/batmanforeveralternatecyr.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #000;
@@ -119,8 +125,8 @@
       border: 1px solid rgba(0,0,0,0.35);
     }
     .title {
-      font-family: "Batman Forever Alternate Cyr", "Bebas Neue", sans-serif;
-      font-size: 28px;
+      font-family: 'BatmanForeverCyr', "Batman Forever Alternate Cyr", "Bebas Neue", sans-serif;
+      font-size: 32px;
       text-align: center;
       margin: 12px 0;
     }
@@ -928,18 +934,18 @@
     };
 
     // Переключение режимов
-    document.querySelectorAll(".pill").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        document.querySelectorAll(".pill").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        currentMode = btn.getAttribute("data-mode");
+    var pillBtns = document.querySelectorAll(".pill[data-mode]");
+    for (var i = 0; i < pillBtns.length; i++) {
+      pillBtns[i].addEventListener("click", function() {
+        for (var j = 0; j < pillBtns.length; j++) pillBtns[j].classList.remove("active");
+        this.classList.add("active");
+        currentMode = this.getAttribute("data-mode");
         var isFast = (currentMode === "fast");
         document.getElementById("hardFilters").style.display = isFast ? "none" : "block";
         document.getElementById("fastPanel").classList.toggle("show", isFast);
-        document.getElementById("modeHint").innerHTML = isFast ? "Fast: определи геолокацию или выбери точку на карте" : "Hard: нажми на плитку Адрес, чтобы выбрать место";
         if (isFast) updateFastAddressBlock();
       });
-    });
+    }
     document.querySelectorAll(".sport").forEach(s=>{
       s.addEventListener("click",()=>{
         document.querySelectorAll(".sport").forEach(s2=>s2.classList.remove("active"));
