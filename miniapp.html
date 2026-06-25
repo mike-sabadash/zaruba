@@ -444,45 +444,105 @@
     // ─── ZARUBA DETAIL ────────────────────────────
     Router.register('/zaruba', function (root, qs) {
       if (!qs.id) { Router.navigate('/'); return; }
-      Promise.all([mockDb.getZaruba(qs.id), mockDb.listLocations(), mockDb.listTeamsForZaruba(qs.id)]).then(function (r) {
-        var z = r[0], locs = r[1], teams = r[2];
+      Promise.all([
+        mockDb.getZaruba(qs.id),
+        mockDb.listLocations(),
+        mockDb.listTeamsForZaruba(qs.id),
+        mockDb.listFans(qs.id),
+        mockDb.listMessages(qs.id),
+      ]).then(function (r) {
+        var z = r[0], locs = r[1], teams = r[2], fans = r[3], messages = r[4];
         if (!z) { render('<div class="page text-center text-muted">Не найдено</div>'); return; }
+
         var loc = locs.find(function(l){return l.id===z.locationId;});
         var teamA = teams.find(function(t){return t.side==='A';});
         var teamB = teams.find(function(t){return t.side==='B';});
+        var uid = ZarubaSession.get();
+        var isOrg = uid === z.organizerId;
+        var isRef = uid === z.refereeId;
 
-        var sc = z.status==='live' ? 'tag-live' : z.status==='finished' ? 'tag-muted' : 'tag-accent';
-        var st = z.status==='live' ? '● LIVE' : z.status==='finished' ? 'Завершена' : 'Ожидает';
+        function locN(id) { var l = locs.find(function(x){return x.id===id;}); return l ? l.name : '—'; }
 
         var h = '<div class="page">';
-        h += '<div class="text-center mb-4"><span class="tag ' + sc + '">' + st + '</span>';
-        h += '<p class="score mono">' + z.scoreA + ' : ' + z.scoreB + '</p>';
-        h += '<p style="font-weight:600">' + (loc ? loc.name : '—') + '</p>';
-        h += '<p class="text-sm text-muted">' + zarubaSportLabel(z.sport) + ' · ' + zarubaFormatDateTime(z.startsAt) + '</p></div>';
 
-        if (z.description) h += '<p class="text-sm text-muted mb-4">' + z.description + '</p>';
+        // Header
+        h += '<div class="flex items-center justify-between mb-3">';
+        h += '<a href="#/" style="color:var(--text-2);text-decoration:none;font-size:14px">← Назад</a>';
+        var sc = z.status==='live' ? 'tag-live' : z.status==='finished' ? 'tag-muted' : 'tag-accent';
+        var st = z.status==='live' ? '● LIVE' : z.status==='finished' ? 'Завершена' : 'Ожидает';
+        h += '<span class="tag ' + sc + '">' + st + '</span>';
+        h += '</div>';
+
+        // Score
+        h += '<div class="text-center" style="padding:16px 0">';
+        h += '<p class="font-display" style="font-size:64px;line-height:1;color:var(--text)">' + z.scoreA + ' : ' + z.scoreB + '</p>';
+        h += '<p style="font-weight:600;font-size:15px;margin-top:8px;color:var(--text)">' + (loc ? loc.name : '—') + '</p>';
+        h += '<p class="text-xs text-muted" style="margin-top:4px">' + zarubaSportLabel(z.sport) + ' · ' + zarubaFormatDateTime(z.startsAt) + '</p>';
+        if (z.description) h += '<p class="text-xs text-muted" style="margin-top:8px">' + z.description + '</p>';
+        h += '</div>';
 
         // Teams
-        h += '<div class="flex gap-3">';
-        h += teamCard(teamA, 'A', z);
-        h += teamCard(teamB, 'B', z);
+        h += '<div class="flex gap-3" style="margin-bottom:16px">';
+        h += teamBlock(teamA, 'А', z);
+        h += teamBlock(teamB, 'Б', z);
+        h += '</div>';
+
+        // Fans
+        if (fans.length > 0) {
+          h += '<div class="card" style="margin-bottom:12px">';
+          h += '<p class="text-xs text-muted" style="margin-bottom:8px">👥 Фанаты (' + fans.length + ')</p>';
+          h += '<div class="flex gap-2" style="flex-wrap:wrap">';
+          fans.forEach(function(f) {
+            h += '<span class="tag tag-muted">' + f.fanUserId.slice(0,6) + '</span>';
+          });
+          h += '</div></div>';
+        }
+
+        // Chat
+        h += '<div class="card" style="margin-bottom:12px">';
+        h += '<p class="text-xs text-muted" style="margin-bottom:8px">💬 Чат</p>';
+        if (messages.length === 0) h += '<p class="text-xs text-muted">Пока пусто</p>';
+        else {
+          messages.slice(-5).forEach(function(m) {
+            h += '<p class="text-xs" style="color:var(--text);margin-bottom:4px"><span style="color:var(--accent)">' + m.userId.slice(0,6) + ':</span> ' + m.body + '</p>';
+          });
+        }
         h += '</div>';
 
         // Actions
-        var uid = ZarubaSession.get();
-        if (uid && z.refereeId === uid) {
-          h += '<a href="#/judge?id=' + z.id + '" class="btn btn-ghost mt-4" style="text-decoration:none">Судейская панель</a>';
+        h += '<div class="flex gap-2" style="margin-bottom:12px">';
+        h += '<button onclick="copyInvite(\'' + z.id + '\')" class="btn btn-ghost" style="flex:1;font-size:13px;height:40px">📤 Копировать ссылку</button>';
+        if (z.status === 'live' && isRef) {
+          h += '<a href="#/judge?id=' + z.id + '" class="btn btn-ghost" style="flex:1;font-size:13px;height:40px;text-decoration:none;text-align:center">⚖️ Судить</a>';
         }
+        h += '</div>';
 
         h += '</div>' + nav('');
         render(h);
 
-        function teamCard(team, side, z) {
-          if (!team) return '<div style="flex:1;text-align:center;padding:20px;border:1px dashed var(--border);border-radius:var(--radius);background:var(--surface)"><p class="text-muted text-sm">Команда ' + side + '</p><p class="text-xs text-muted mt-2">Пусто</p></div>';
-          return '<div class="card" style="flex:1"><p class="accent text-xs" style="font-weight:700">' + team.name + '</p><p class="font-display mt-2" style="font-size:36px">' + (side==='A' ? z.scoreA : z.scoreB) + '</p></div>';
+        function teamBlock(team, label, z) {
+          if (!team) {
+            return '<div style="flex:1;text-align:center;padding:16px;border:1px dashed var(--border);border-radius:var(--radius);background:var(--surface)">' +
+              '<p style="font-weight:700;font-size:14px;color:var(--accent)">Команда ' + label + '</p>' +
+              '<p class="text-xs text-muted" style="margin-top:4px">Ждёт игроков</p></div>';
+          }
+          return '<div class="card" style="flex:1;margin-bottom:0">' +
+            '<p style="font-weight:700;font-size:13px;color:var(--accent)">' + team.name + '</p>' +
+            '<p class="font-display" style="font-size:40px;margin-top:4px;line-height:1">' + (label==='А' ? z.scoreA : z.scoreB) + '</p>' +
+            '<p class="text-xs text-muted" style="margin-top:4px">Капитан: ' + (team.captainId ? team.captainId.slice(0,6) : '—') + '</p></div>';
         }
       });
     });
+
+    window.copyInvite = function(zarubaId) {
+      var link = 'https://t.me/zzzaruba_bot?start=zaruba_' + zarubaId;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(link).then(function() {
+          TMA.haptic.notification('success');
+          if (typeof zarubaToast === 'function') zarubaToast('Ссылка скопирована!', 'win', 2000);
+        });
+      }
+    };
 
     // ─── CREATE ───────────────────────────────────
     Router.register('/create', function (root) {
