@@ -120,9 +120,9 @@
     }
     .title {
       font-family: "Batman Forever Alternate Cyr", "Bebas Neue", sans-serif;
-      font-size: 64px;
+      font-size: 28px;
       text-align: center;
-      margin: 20px 0;
+      margin: 12px 0;
     }
     .modes {
       display: flex;
@@ -539,13 +539,12 @@
     <div class="top-logo" aria-label="Zaruba"></div>
   </header>
 
-  <h1 class="title">Забить зарубу</h1>
-
   <div class="modes">
     <button class="pill" data-mode="fast">Fast</button>
     <button class="pill active" data-mode="hard">Hard</button>
   </div>
-  <div class="mode-hint" id="modeHint">Hard: нажми на плитку Адрес, чтобы выбрать место</div>
+
+  <h1 class="title">Выбери во что зарубиться</h1>
 
   <div class="sports">
     <div class="sport" data-sport="streetball">
@@ -611,12 +610,8 @@
 
   <!-- Fast панель -->
   <div id="fastPanel" class="fast-panel">
-    <button class="fast-geo-btn" id="fastGeoBtn">Определить мою геолокацию</button>
+    <button class="fast-geo-btn" id="fastGeoBtn">📍 Выбрать локацию</button>
     <div id="fastAddressContainer"></div>
-    <div class="fast-meta">
-      <span id="mapPointText">Точка не выбрана</span>
-      <span class="point-preview" id="previewPoint" style="display:none;">📌 Показать на карте</span>
-    </div>
   </div>
 
   <div class="cta-block">
