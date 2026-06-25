@@ -145,7 +145,7 @@
         '<a href="#/" class="' + (active === 'home' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Главная</a>' +
         '<a href="#/feed" class="' + (active === 'feed' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Лента</a>' +
         '<a href="#/shop" class="' + (active === 'shop' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Магазин</a>' +
-        '<a href="#/profile' + (uid ? '?id=' + uid : '') + '" class="' + (active === 'profile' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</a>' +
+        '<a href="#/profile" class="' + (active === 'profile' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</a>' +
         '</div></div>';
     }
 
@@ -287,8 +287,9 @@
 
     // ─── CREATE ───────────────────────────────────
     Router.register('/create', function (root) {
-      var uid = ZarubaSession.get();
-      if (!uid) { Router.navigate('/login'); return; }
+      ensureUser().then(function (me) {
+        if (!me) { Router.navigate('/'); return; }
+        var uid = me.id;
 
       var h = '<div class="page">';
       h += '<h1 class="mb-4">Новая заруба</h1>';
@@ -337,6 +338,7 @@
           Router.navigate('/zaruba?id=' + z.id);
         });
       };
+      }); // close ensureUser
     });
 
     // ─── LOGIN ────────────────────────────────────
@@ -366,7 +368,8 @@
 
     // ─── SHOP ─────────────────────────────────────
     Router.register('/shop', function (root) {
-      var uid = ZarubaSession.get();
+      ensureUser().then(function (me) {
+        var uid = me ? me.id : null;
       function renderShop(user) {
         var h = '<div class="page"><h1 class="mb-4">Магазин</h1>';
         if (user) {
@@ -391,15 +394,17 @@
         if (!uid) return;
         mockDb.purchaseShopItem(uid, id).then(function(){TMA.haptic.notification('success');mockDb.getUser(uid).then(renderShop);}).catch(function(e){if(typeof zarubaToast==='function') zarubaToast(e.message,'info',3000);});
       };
+      }); // close ensureUser
     });
 
     // ─── PROFILE ──────────────────────────────────
     Router.register('/profile', function (root, qs) {
-      var uid = qs.id || ZarubaSession.get();
-      if (!uid) { Router.navigate('/login'); return; }
-      mockDb.getUser(uid).then(function (u) {
-        if (!u) { render('<div class="page text-center text-muted">Не найден</div>'); return; }
-        var isMe = ZarubaSession.get() === uid;
+      ensureUser().then(function (me) {
+        var uid = qs.id || (me ? me.id : null);
+        if (!uid) { Router.navigate('/'); return; }
+        mockDb.getUser(uid).then(function (u) {
+          if (!u) { render('<div class="page text-center text-muted">Не найден</div>'); return; }
+          var isMe = me && me.id === uid;
         var prog = zarubaCharismaProgress(u.charismaTotal);
 
         var h = '<div class="page">';
@@ -435,7 +440,8 @@
         if (isMe) h += '<button onclick="doLogout()" class="btn btn-ghost mt-4">Выйти</button>';
         h += '</div>' + nav('profile');
         render(h);
-      });
+        }); // close getUser
+      }); // close ensureUser
 
       window.copyRef = function() {
         var el = document.getElementById('ref-link');
@@ -446,11 +452,13 @@
 
     // ─── JUDGE ────────────────────────────────────
     Router.register('/judge', function (root, qs) {
-      var uid = ZarubaSession.get();
-      if (!uid || !qs.id) { Router.navigate('/'); return; }
+      if (!qs.id) { Router.navigate('/'); return; }
+      ensureUser().then(function (me) {
+        if (!me) { Router.navigate('/'); return; }
+        var uid = me.id;
 
-      mockDb.getZaruba(qs.id).then(function (z) {
-        if (!z || z.refereeId !== uid) { render('<div class="page text-center text-muted">Только судья</div>'); return; }
+        mockDb.getZaruba(qs.id).then(function (z) {
+          if (!z || z.refereeId !== uid) { render('<div class="page text-center text-muted">Только судья</div>'); return; }
 
         var h = '<div class="page">';
         h += '<div class="text-center"><h1>Судья</h1>';
@@ -484,7 +492,8 @@
         };
         window.jFoul = function() { mockDb.addFoul(z.id, uid).then(function(){TMA.haptic.impact('heavy');Router.resolve();}); };
         window.jFinish = function() { mockDb.finishMatch(z.id, uid).then(function(){TMA.haptic.notification('success');Router.resolve();}); };
-      });
+        }); // close getZaruba
+      }); // close ensureUser
     });
 
     // ─── START ────────────────────────────────────
