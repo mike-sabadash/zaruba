@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="telegram-webapp-capable" content="yes" />
+  <title>Zaruba</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface-2: #1c1c1e;
+      --border: rgba(255,255,255,0.10);
+      --text: #f5f5f5;
+      --text-2: #a0a0a0;
+      --text-3: #707070;
+      --accent: #f20b88;
+      --accent-btn: #c40a6e;
+      --accent-soft: rgba(242,11,136,0.14);
+      --green: #16a34a;
+      --red: #b91c1c;
+      --amber: #d97706;
+      --radius: 14px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { overscroll-behavior: none; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; font-size: 15px; line-height: 1.5; }
+    body { padding-bottom: var(--safe-bottom); }
+    input, textarea, select { font-family: inherit; }
+
+    /* ─── Layout ──────────────────────────────────── */
+    .app { min-height: 100dvh; display: flex; flex-direction: column; }
+    .scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .page { padding: 20px 16px 100px; animation: fadeUp 0.2s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ─── Bottom Nav ──────────────────────────────── */
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; padding-bottom: var(--safe-bottom); background: rgba(10,10,10,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); }
+    .nav-inner { display: flex; justify-content: space-around; padding: 8px 0 6px; }
+    .nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 16px; border-radius: 10px; text-decoration: none; color: var(--text-2); font-size: 11px; font-weight: 600; letter-spacing: 0.03em; transition: color 0.15s; min-height: 44px; justify-content: center; }
+    .nav a.active { color: var(--accent); }
+    .nav svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ─── Typography ──────────────────────────────── */
+    h1 { font-family: 'Bebas Neue', 'Inter', sans-serif; font-size: 36px; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1; }
+    h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-2); }
+    .font-display { font-family: 'Bebas Neue', 'Inter', sans-serif; letter-spacing: 0.04em; text-transform: uppercase; }
+    .mono { font-variant-numeric: tabular-nums; }
+    .accent { color: var(--accent); }
+
+    /* ─── Cards ───────────────────────────────────── */
+    .card { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+
+    /* ─── Buttons ─────────────────────────────────── */
+    .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 50px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 0.1s, opacity 0.1s; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent-btn); color: #fff; }
+    .btn-ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-sm { height: 40px; font-size: 14px; border-radius: 10px; }
+
+    /* ─── Inputs ──────────────────────────────────── */
+    .input { width: 100%; height: 48px; padding: 0 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 15px; outline: none; }
+    .input:focus { border-color: var(--accent); }
+    .textarea { width: 100%; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 15px; resize: none; outline: none; min-height: 80px; }
+    .label { display: block; font-size: 13px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; letter-spacing: 0.01em; }
+
+    /* ─── Tags ────────────────────────────────────── */
+    .tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .tag-live { background: rgba(185,28,28,0.15); color: var(--red); }
+    .tag-accent { background: var(--accent-soft); color: var(--accent); }
+    .tag-green { background: rgba(22,163,74,0.15); color: var(--green); }
+    .tag-muted { background: var(--surface-2); color: var(--text); }
+
+    /* ─── Score ───────────────────────────────────── */
+    .score { font-family: 'Bebas Neue', 'Inter', sans-serif; font-size: 56px; font-weight: 400; letter-spacing: 0.06em; text-align: center; padding: 24px 0; line-height: 1; }
+
+    /* ─── List ────────────────────────────────────── */
+    .list-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .list-item:last-child { border-bottom: none; }
+
+    /* ─── Utilities ───────────────────────────────── */
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .mt-2 { margin-top: 8px; }
+    .mt-4 { margin-top: 16px; }
+    .mb-4 { margin-bottom: 16px; }
+    .text-center { text-align: center; }
+    .text-xs { font-size: 11px; }
+    .text-sm { font-size: 14px; }
+    .text-muted { color: var(--text-2); }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hidden { display: none !important; }
+
+    /* ─── Home Screen ─────────────────────────────── */
+    .sport-grid { display: flex; justify-content: center; gap: 24px; margin: 20px 0; flex-wrap: wrap; }
+    .sport-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 16px 20px; border-radius: 22px; border: 1px dashed rgba(122,122,122,0.4); background: rgba(0,0,0,0.5); transition: all 0.2s; min-width: 90px; }
+    .sport-item.active { border: 1px dashed rgba(255,255,255,0.6); background: rgba(242,11,136,0.08); }
+    .sport-item:not(.active) { opacity: 0.5; }
+    .sport-item img { width: 44px; height: 44px; }
+    .sport-item span { font-size: 12px; font-weight: 500; color: #ccc; }
+
+    .cta-block { position: relative; width: 100%; max-width: 340px; min-height: 180px; margin: 24px auto 16px; text-align: center; }
+    .cta-spray { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: min(320px, 100%); aspect-ratio: 359/239; opacity: 0.4; background: url("assets/local/cta-spray.png") center/cover no-repeat; mix-blend-mode: screen; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 48%, rgba(0,0,0,0) 84%); -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 48%, rgba(0,0,0,0) 84%); pointer-events: none; }
+    .cta-bats { position: absolute; left: 50%; top: 25%; transform: translate(-50%, -50%); width: 72px; height: 72px; background: url("assets/local/icon-bats.png") center/contain no-repeat; pointer-events: none; }
+    .cta-rail { position: relative; display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 80px; z-index: 2; }
+    .cta-arrow { flex: 0 0 60px; height: 6px; background: url("assets/local/arrow-left.png") center/contain no-repeat; opacity: 0.7; }
+    .cta-arrow.right { transform: scaleX(-1); }
+    .fight-btn { flex: 0 0 auto; width: 220px; height: 52px; border-radius: 4px; border: 1px solid var(--accent); background: var(--accent); color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.04em; cursor: pointer; transition: all 0.18s ease; }
+    .fight-btn:active { transform: scale(0.97); }
+
+    .last-match .score-line { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: #fff; letter-spacing: 0.04em; line-height: 1; }
+
+    /* ─── Arena / Create ─────────────────────────── */
+    .arena-title { font-family: 'Batman Forever Alternate Cyr', 'Bebas Neue', sans-serif; font-size: 36px; text-align: center; margin: 16px 0; }
+    .modes { display: flex; justify-content: center; gap: 16px; margin: 16px 0; }
+    .pill { padding: 8px 28px; border-radius: 30px; border: 1px solid #7a7a7a; background: transparent; color: #7a7a7a; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .pill.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(242,11,136,0.3); }
+    .mode-hint { text-align: center; font-size: 12px; color: var(--text-3); margin: 8px 0 16px; }
+
+    .arena-sports { display: flex; justify-content: center; gap: 40px; margin: 16px 0 24px; flex-wrap: wrap; }
+    .arena-sport { text-align: center; cursor: pointer; opacity: 0.35; transition: opacity 0.2s; }
+    .arena-sport.active { opacity: 1; }
+    .arena-sport img { width: 48px; height: 48px; margin-bottom: 8px; }
+    .arena-sport-label { font-size: 12px; color: #ccc; }
+
+    .smart-filters { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+    .filter-tile { position: relative; background: rgba(0,0,0,0.5); border: 1px dashed rgba(122,122,122,0.4); border-radius: 22px; padding: 16px 8px; text-align: center; transition: border 0.2s; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+    .filter-tile.selected { border: 1px dashed rgba(255,255,255,0.6); }
+    .tile-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.9); margin-bottom: 4px; }
+    .tile-value { font-size: 12px; color: #ddd; opacity: 0.8; }
+    .tile-action { position: absolute; top: 10px; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; }
+    .tile-action svg { width: 18px; height: 18px; stroke-width: 3px; fill: none; }
+    .tick { left: 10px; }
+    .tick svg { stroke: #2ecc71; }
+    .cross { right: 10px; }
+    .cross svg { stroke: #aaa; }
+
+    .fast-panel { display: none; max-width: 300px; margin: 0 auto 20px; text-align: center; }
+    .fast-panel.show { display: block; }
+    .fast-geo-btn { background: rgba(0,0,0,0.6); border: 1px dashed rgba(122,122,122,0.4); border-radius: 22px; color: white; padding: 14px 18px; width: 100%; cursor: pointer; font-size: 14px; transition: border 0.2s; margin-bottom: 12px; }
+    .fast-address-block { background: rgba(0,0,0,0.6); border: 1px dashed rgba(122,122,122,0.4); border-radius: 22px; padding: 14px 18px; margin-bottom: 12px; }
+    .fast-address-text { font-size: 12px; color: #ccc; margin-bottom: 6px; }
+    .fast-change-link { color: var(--accent); cursor: pointer; font-size: 12px; text-decoration: underline; }
+
+    .geo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .geo-overlay.show { display: flex; }
+    .geo-overlay-card { width: 90%; max-width: 800px; height: 80vh; background: #111; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; padding: 16px; }
+    .geo-map { flex: 1; width: 100%; border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
+    .geo-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+    .geo-address-input { flex: 1; padding: 10px; border-radius: 20px; background: #222; border: none; color: white; font-size: 13px; }
+    .geo-confirm, .geo-close { padding: 10px 20px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; color: white; font-size: 13px; }
+    .geo-confirm { background: var(--accent); }
+    .geo-close { background: #111; border: 1px solid #555; }
+    .sport-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; padding: 12px 16px; border-radius: 12px; border: 2px solid transparent; transition: all 0.15s; }
+    .sport-item.active { border-color: var(--accent); background: var(--accent-soft); }
+    .sport-item:not(.active) { opacity: 0.45; }
+    .sport-item span:first-child { font-size: 28px; }
+    .sport-item span:last-child { font-size: 11px; font-weight: 600; color: var(--text-2); }
+
+    .cta-main { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; border: none; border-radius: 14px; background: var(--accent); color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; cursor: pointer; transition: transform 0.1s; }
+    .cta-main:active { transform: scale(0.97); }
+
+    .secondary-actions { display: flex; gap: 10px; margin-top: 12px; }
+    .secondary-actions button { flex: 1; height: 42px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); color: var(--text-2); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .secondary-actions button:active { transform: scale(0.97); }
+
+    .last-match { margin-top: 24px; }
+    .last-match-header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-2); margin-bottom: 8px; }
+
+    /* Test panel */
+    .test-panel { position: fixed; bottom: 80px; right: 16px; z-index: 60; }
+    .test-toggle { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; opacity: 0.5; }
+    .test-menu { position: absolute; bottom: 44px; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px; min-width: 200px; display: none; }
+    .test-menu.open { display: block; }
+    .test-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; border: none; background: none; color: var(--text); font-size: 13px; border-radius: 8px; cursor: pointer; }
+    .test-menu button:hover { background: var(--surface-2); }
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script src="js/constants.js"></script>
+  <script src="js/telegram-web-app.js"></script>
+  <script src="js/telegram.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/gamify.js"></script>
+  <script src="js/router.js"></script>
+  <script>
+    try {
+    TMA.ready();
+    var tgUser = TMA.getUser();
+
+    function ensureUser() {
+      if (tgUser) {
+        return mockDb.findUserByPhone('tg_' + tgUser.id).then(function (u) {
+          if (u) return u;
+          var name = tgUser.firstName + (tgUser.lastName ? ' ' + tgUser.lastName : '');
+          return mockDb.createUser('tg_' + tgUser.id, name);
+        }).catch(function(e) {
+          console.error('ensureUser tg error:', e);
+          return null;
+        });
+      }
+      var s = ZarubaSession.get();
+      if (s) return mockDb.getUser(s).catch(function(){ return null; });
+      return Promise.resolve(null);
+    }
+
+    var app = document.getElementById('app');
+    function render(html) { app.innerHTML = html; }
+    window.toggleHero = function() {
+      var cur = parseInt(localStorage.getItem('zaruba_hero') || '0');
+      var next = (cur + 1) % 2;
+      localStorage.setItem('zaruba_hero', next);
+      var heroes = ['assets/local/hero-header2.png', 'assets/local/hero-header1.png'];
+      var img = document.getElementById('hero-img');
+      if (img) img.src = heroes[next];
+    };
+
+    function nav(active) {
+      var uid = ZarubaSession.get();
+      return '<div class="nav"><div class="nav-inner">' +
+        '<a href="#/" class="' + (active === 'home' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Главная</a>' +
+        '<a href="#/feed" class="' + (active === 'feed' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Лента</a>' +
+        '<a href="#/shop" class="' + (active === 'shop' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Магазин</a>' +
+        '<a href="#/profile" class="' + (active === 'profile' ? 'active' : '') + '"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</a>' +
+        '</div></div>';
+    }
+
+    // ─── HOME ─────────────────────────────────────
+    var _selectedSport = 'football';
+
+    Router.register('/', function (root, qs) {
+      ensureUser().then(function (user) {
+        Promise.all([mockDb.listZarubas(), mockDb.listLocations()]).then(function (r) {
+          var zarubas = r[0], locs = r[1];
+          var scheduled = zarubas.filter(function(z){return z.status==='scheduled';});
+          var finished = zarubas.filter(function(z){return z.status==='finished';});
+          var lastFinished = finished[0];
+          var hasData = zarubas.length > 0;
+
+          function locN(id) { var l = locs.find(function(x){return x.id===id;}); return l ? l.name : '—'; }
+          function timeUntil(iso) {
+            var diff = new Date(iso) - new Date();
+            if (diff <= 0) return 'Скоро';
+            var m = Math.floor(diff / 60000);
+            var h = Math.floor(m / 60);
+            m = m % 60;
+            return h > 0 ? h + 'ч ' + m + 'мин' : m + 'мин';
+          }
+
+          var h = '<div class="page">';
+
+          // Header: logo image + chips
+          h += '<div class="flex items-center justify-between" style="align-items:center">';
+          h += '<div id="logo-area" style="cursor:pointer;width:120px;height:40px;background:url(assets/local/logo-full.png) center/contain no-repeat"></div>';
+          h += '<span class="tag tag-accent">🪙 ' + (user ? user.chips : 0) + ' чипсеков</span>';
+          h += '</div>';
+
+          // Hero banner with badge
+          var heroIdx = parseInt(localStorage.getItem('zaruba_hero') || '0');
+          var heroes = ['assets/local/hero-header2.png', 'assets/local/hero-header1.png'];
+          h += '<div onclick="toggleHero()" style="position:relative;margin:12px -16px 16px;overflow:hidden;cursor:pointer">';
+          h += '<img id="hero-img" src="' + heroes[heroIdx % heroes.length] + '" alt="" style="width:100%;height:auto;display:block;object-fit:cover" />';
+          if (!hasData) {
+            h += '<div style="position:absolute;bottom:12px;left:12px;right:12px">';
+            h += '<div style="background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">';
+            h += '<span style="font-weight:700;font-size:14px;color:var(--accent)">ТЫ ПЕРВЫЙ!</span>';
+            h += '<span style="font-size:12px;color:var(--text-2)">+50🪙 за первую зарубу</span>';
+            h += '</div></div>';
+          }
+          h += '</div>';
+
+          // Live
+          var live = zarubas.filter(function(z){return z.status==='live';});
+          if (live.length) {
+            live.forEach(function (z) {
+              h += '<a href="#/zaruba?id=' + z.id + '" class="card" style="text-decoration:none;border-left:3px solid var(--red);margin-bottom:8px">';
+              h += '<div class="flex items-center justify-between"><div><p class="text-xs" style="color:var(--accent)">' + zarubaSportLabel(z.sport) + '</p><p style="font-weight:700;color:var(--text);margin-top:2px">' + locN(z.locationId) + '</p></div>';
+              h += '<span class="tag tag-live">● LIVE</span></div></a>';
+            });
+          }
+
+          // Title
+          h += '<p style="font-family:\'Batman Forever Alternate Cyr\',\'Bebas Neue\',sans-serif;font-size:28px;text-align:center;color:var(--text);margin:12px 0 8px">Выбери во что зарубиться</p>';
+
+          // Sport picker with images
+          h += '<div class="sport-grid">';
+          var sports = [
+            { id: 'football', icon: 'assets/figma/sport-football.png', label: 'Футбол' },
+            { id: 'basketball', icon: 'assets/figma/sport-basketball.png', label: 'Баскет' },
+            { id: 'volleyball', icon: 'assets/figma/sport-volleyball.png', label: 'Волейбол' },
+          ];
+          sports.forEach(function (s) {
+            h += '<div class="sport-item ' + (_selectedSport === s.id ? 'active' : '') + '" onclick="selectSport(\'' + s.id + '\')">';
+            h += '<img src="' + s.icon + '" alt="' + s.label + '" /><span>' + s.label + '</span></div>';
+          });
+          h += '</div>';
+
+          // CTA block with spray background
+          h += '<div class="cta-block">';
+          h += '<div class="cta-spray"></div>';
+          h += '<div class="cta-bats"></div>';
+          h += '<div class="cta-rail">';
+          h += '<span class="cta-arrow"></span>';
+          h += '<button onclick="quickCreate()" class="fight-btn">ЗАБИТЬ ЗАРУБУ</button>';
+          h += '<span class="cta-arrow right"></span>';
+          h += '</div></div>';
+
+          // Invite (with spacing)
+          h += '<div style="text-align:center;margin-top:16px"><button onclick="inviteFriend()" class="btn btn-ghost" style="display:inline-flex;font-size:13px;gap:6px;height:40px">📤 Пригласить друга</button></div>';
+
+          // Last match
+          if (lastFinished) {
+            h += '<div class="last-match">';
+            h += '<p class="last-match-header">Последний матч</p>';
+            h += '<a href="#/zaruba?id=' + lastFinished.id + '" class="card" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between">';
+            h += '<div><p style="font-weight:700;color:var(--text)">' + locN(lastFinished.locationId) + '</p>';
+            h += '<p class="text-xs text-muted">' + zarubaFormatDateTime(lastFinished.startsAt) + '</p></div>';
+            h += '<span class="score-line">' + lastFinished.scoreA + ' : ' + lastFinished.scoreB + '</span>';
+            h += '</a></div>';
+          }
+
+          // Upcoming
+          if (scheduled.length > 0) {
+            h += '<div style="margin-top:20px">';
+            h += '<p class="last-match-header">Скоро</p>';
+            scheduled.slice(0, 2).forEach(function (z) {
+              h += '<a href="#/zaruba?id=' + z.id + '" class="card" style="text-decoration:none;margin-bottom:8px">';
+              h += '<div class="flex items-center justify-between"><p style="font-weight:700;color:var(--text)">' + locN(z.locationId) + '</p><span class="tag tag-accent">' + timeUntil(z.startsAt) + '</span></div></a>';
+            });
+            h += '</div>';
+          }
+
+          // Test panel
+          h += '<div class="test-panel"><div class="test-toggle" onclick="toggleTestMenu()">🧪</div>';
+          h += '<div class="test-menu" id="test-menu">';
+          h += '<button onclick="testAddPlayers()">👥 Добавить 3 игроков</button>';
+          h += '<button onclick="testCreateZaruba()">⚽ Создать зарубу через 5 мин</button>';
+          h += '<button onclick="testFinishMatch()">🏆 Завершить матч (4:2)</button>';
+          h += '<button onclick="testReset()">🔄 Сбросить всё</button>';
+          h += '</div></div>';
+
+          h += '</div>' + nav('home');
+          render(h);
+        });
+      });
+    });
+
+    window.selectSport = function(sport) {
+      _selectedSport = sport;
+      Router.resolve();
+    };
+
+    window.quickCreate = function() {
+      ensureUser().then(function(user) {
+        if (!user) return;
+        mockDb.listLocations().then(function(locs) {
+          if (!locs.length) return;
+          var startTime = new Date();
+          startTime.setMinutes(startTime.getMinutes() + 30);
+          var sportMap = { football: 'football_5', basketball: 'basketball_3', volleyball: 'volleyball' };
+          mockDb.createZaruba({
+            sport: sportMap[_selectedSport] || 'football_5',
+            locationId: locs[0].id,
+            startsAt: startTime.toISOString(),
+            description: 'Собирай команду!',
+            organizerId: user.id
+          }).then(function(z) {
+            TMA.haptic.notification('success');
+            Router.navigate('/zaruba?id=' + z.id);
+          });
+        });
+      });
+    };
+
+    window.inviteFriend = function() {
+      ensureUser().then(function(user) {
+        if (!user) return;
+        var link = 'https://t.me/zzzaruba_bot?start=ref_' + user.referralCode;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(link).then(function() {
+            TMA.haptic.notification('success');
+            if (typeof zarubaToast === 'function') zarubaToast('Ссылка скопирована!', 'win', 2000);
+          });
+        } else {
+          TMA.openLink(link);
+        }
+      });
+    };
+
+    window.videoBonus = function() {
+      ensureUser().then(function(user) {
+        if (!user) return;
+        user.chips += 50;
+        user.charismaTotal += 25;
+        mockDb.upsertUser(user).then(function() {
+          TMA.haptic.notification('success');
+          if (typeof zarubaToast === 'function') zarubaToast('+50 чипсеков за видео! 🎥', 'win', 2500);
+          Router.resolve();
+        });
+      });
+    };
+
+    // ─── Test mechanics ────────────────────────────
+    window.toggleTestMenu = function() {
+      document.getElementById('test-menu').classList.toggle('open');
+    };
+
+    window.testAddPlayers = function() {
+      var names = ['Димон', 'Саня', 'Маша'];
+      var promises = names.map(function(n, i) {
+        return mockDb.createUser('test_' + Date.now() + '_' + i, n);
+      });
+      Promise.all(promises).then(function() {
+        TMA.haptic.notification('success');
+        if (typeof zarubaToast === 'function') zarubaToast('3 игрока добавлены', 'info', 2000);
+        document.getElementById('test-menu').classList.remove('open');
+        Router.resolve();
+      });
+    };
+
+    window.testCreateZaruba = function() {
+      ensureUser().then(function(user) {
+        if (!user) return;
+        mockDb.listLocations().then(function(locs) {
+          if (!locs.length) return;
+          var startTime = new Date();
+          startTime.setMinutes(startTime.getMinutes() + 5);
+          mockDb.createZaruba({
+            sport: 'football_5',
+            locationId: locs[0].id,
+            startsAt: startTime.toISOString(),
+            description: 'Тестовая заруба',
+            organizerId: user.id
+          }).then(function() {
+            TMA.haptic.notification('success');
+            if (typeof zarubaToast === 'function') zarubaToast('Заруба создана!', 'win', 2000);
+            document.getElementById('test-menu').classList.remove('open');
+            Router.resolve();
+          });
+        });
+      });
+    };
+
+    window.testFinishMatch = function() {
+      var zarubas = mockDb.listZarubas();
+      var live = zarubas.find(function(z){return z.status==='live';});
+      var scheduled = zarubas.find(function(z){return z.status==='scheduled';});
+      var target = live || scheduled;
+      if (!target) {
+        if (typeof zarubaToast === 'function') zarubaToast('Нет матчей для завершения', 'info', 2000);
+        return;
+      }
+      ensureUser().then(function(user) {
+        if (!user) return;
+        // Set as referee and start if needed
+        if (target.status === 'scheduled') {
+          mockDb.setReferee(target.id, target.organizerId, user.id).then(function() {
+            mockDb.startLive(target.id, user.id).then(function() {
+              finishIt(target.id, user.id);
+            });
+          });
+        } else {
+          finishIt(target.id, user.id);
+        }
+      });
+
+      function finishIt(id, uid) {
+        mockDb.finishMatch(id, uid).then(function() {
+          TMA.haptic.notification('success');
+          if (typeof zarubaToast === 'function') zarubaToast('Матч завершён!', 'xp', 2000);
+          document.getElementById('test-menu').classList.remove('open');
+          Router.resolve();
+        });
+      }
+    };
+
+    window.testReset = function() {
+      mockDb.reset().then(function() {
+        TMA.haptic.notification('success');
+        if (typeof zarubaToast === 'function') zarubaToast('Всё сброшено', 'info', 1500);
+        document.getElementById('test-menu').classList.remove('open');
+        Router.resolve();
+      });
+    };
+
+    // ─── FEED ─────────────────────────────────────
+    Router.register('/feed', function (root, qs) {
+      Promise.all([mockDb.listZarubas(), mockDb.listLocations()]).then(function (r) {
+        var zarubas = r[0], locs = r[1];
+        function locN(id) { var l = locs.find(function(x){return x.id===id;}); return l ? l.name : '—'; }
+
+        var h = '<div class="page"><h1 class="mb-4">Лента</h1>';
+        if (!zarubas.length) h += '<p class="text-muted text-center" style="padding:40px 0">Пока пусто</p>';
+        zarubas.forEach(function (z) {
+          var tag = z.status==='live' ? '<span class="tag tag-live">● LIVE</span>'
+            : z.status==='finished' ? '<span class="tag tag-muted">Итог</span>'
+            : '<span class="tag tag-accent">Скоро</span>';
+          h += '<a href="#/zaruba?id=' + z.id + '" class="card" style="text-decoration:none">';
+          h += '<div class="flex items-center justify-between"><p style="font-weight:700;color:var(--text)">' + locN(z.locationId) + '</p>' + tag + '</div>';
+          if (z.status === 'finished') h += '<p class="font-display mt-2" style="font-size:24px">' + z.scoreA + ' : ' + z.scoreB + '</p>';
+          else h += '<p class="text-sm text-muted mt-2">' + zarubaFormatDateTime(z.startsAt) + '</p>';
+          h += '</a>';
+        });
+        h += '</div>' + nav('feed');
+        render(h);
+      });
+    });
+
+    // ─── ZARUBA DETAIL ────────────────────────────
+    Router.register('/zaruba', function (root, qs) {
+      if (!qs.id) { Router.navigate('/'); return; }
+      Promise.all([
+        mockDb.getZaruba(qs.id),
+        mockDb.listLocations(),
+        mockDb.listTeamsForZaruba(qs.id),
+        mockDb.listFans(qs.id),
+        mockDb.listMessages(qs.id),
+      ]).then(function (r) {
+        var z = r[0], locs = r[1], teams = r[2], fans = r[3], messages = r[4];
+        if (!z) { render('<div class="page text-center text-muted">Не найдено</div>'); return; }
+
+        var loc = locs.find(function(l){return l.id===z.locationId;});
+        var teamA = teams.find(function(t){return t.side==='A';});
+        var teamB = teams.find(function(t){return t.side==='B';});
+        var uid = ZarubaSession.get();
+        var isOrg = uid === z.organizerId;
+        var isRef = uid === z.refereeId;
+
+        function locN(id) { var l = locs.find(function(x){return x.id===id;}); return l ? l.name : '—'; }
+
+        var h = '<div class="page">';
+
+        // Header
+        h += '<div class="flex items-center justify-between mb-3">';
+        h += '<a href="#/" style="color:var(--text-2);text-decoration:none;font-size:14px">← Назад</a>';
+        var sc = z.status==='live' ? 'tag-live' : z.status==='finished' ? 'tag-muted' : 'tag-accent';
+        var st = z.status==='live' ? '● LIVE' : z.status==='finished' ? 'Завершена' : 'Ожидает';
+        h += '<span class="tag ' + sc + '">' + st + '</span>';
+        h += '</div>';
+
+        // Score
+        h += '<div class="text-center" style="padding:16px 0">';
+        h += '<p class="font-display" style="font-size:64px;line-height:1;color:var(--text)">' + z.scoreA + ' : ' + z.scoreB + '</p>';
+        h += '<p style="font-weight:600;font-size:15px;margin-top:8px;color:var(--text)">' + (loc ? loc.name : '—') + '</p>';
+        h += '<p class="text-xs text-muted" style="margin-top:4px">' + zarubaSportLabel(z.sport) + ' · ' + zarubaFormatDateTime(z.startsAt) + '</p>';
+        if (z.description) h += '<p class="text-xs text-muted" style="margin-top:8px">' + z.description + '</p>';
+        h += '</div>';
+
+        // Teams
+        h += '<div class="flex gap-3" style="margin-bottom:16px">';
+        h += teamBlock(teamA, 'А', z);
+        h += teamBlock(teamB, 'Б', z);
+        h += '</div>';
+
+        // Fans
+        if (fans.length > 0) {
+          h += '<div class="card" style="margin-bottom:12px">';
+          h += '<p class="text-xs text-muted" style="margin-bottom:8px">👥 Фанаты (' + fans.length + ')</p>';
+          h += '<div class="flex gap-2" style="flex-wrap:wrap">';
+          fans.forEach(function(f) {
+            h += '<span class="tag tag-muted">' + f.fanUserId.slice(0,6) + '</span>';
+          });
+          h += '</div></div>';
+        }
+
+        // Chat
+        h += '<div class="card" style="margin-bottom:12px">';
+        h += '<p class="text-xs text-muted" style="margin-bottom:8px">💬 Чат</p>';
+        if (messages.length === 0) h += '<p class="text-xs text-muted">Пока пусто</p>';
+        else {
+          messages.slice(-5).forEach(function(m) {
+            h += '<p class="text-xs" style="color:var(--text);margin-bottom:4px"><span style="color:var(--accent)">' + m.userId.slice(0,6) + ':</span> ' + m.body + '</p>';
+          });
+        }
+        h += '</div>';
+
+        // Actions
+        h += '<div class="flex gap-2" style="margin-bottom:12px">';
+        h += '<button onclick="copyInvite(\'' + z.id + '\')" class="btn btn-ghost" style="flex:1;font-size:13px;height:40px">📤 Копировать ссылку</button>';
+        if (z.status === 'live' && isRef) {
+          h += '<a href="#/judge?id=' + z.id + '" class="btn btn-ghost" style="flex:1;font-size:13px;height:40px;text-decoration:none;text-align:center">⚖️ Судить</a>';
+        }
+        h += '</div>';
+
+        h += '</div>' + nav('');
+        render(h);
+
+        function teamBlock(team, label, z) {
+          if (!team) {
+            return '<div style="flex:1;text-align:center;padding:16px;border:1px dashed var(--border);border-radius:var(--radius);background:var(--surface)">' +
+              '<p style="font-weight:700;font-size:14px;color:var(--accent)">Команда ' + label + '</p>' +
+              '<p class="text-xs text-muted" style="margin-top:4px">Ждёт игроков</p></div>';
+          }
+          return '<div class="card" style="flex:1;margin-bottom:0">' +
+            '<p style="font-weight:700;font-size:13px;color:var(--accent)">' + team.name + '</p>' +
+            '<p class="font-display" style="font-size:40px;margin-top:4px;line-height:1">' + (label==='А' ? z.scoreA : z.scoreB) + '</p>' +
+            '<p class="text-xs text-muted" style="margin-top:4px">Капитан: ' + (team.captainId ? team.captainId.slice(0,6) : '—') + '</p></div>';
+        }
+      });
+    });
+
+    window.copyInvite = function(zarubaId) {
+      var link = 'https://t.me/zzzaruba_bot?start=zaruba_' + zarubaId;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(link).then(function() {
+          TMA.haptic.notification('success');
+          if (typeof zarubaToast === 'function') zarubaToast('Ссылка скопирована!', 'win', 2000);
+        });
+      }
+    };
+
+    // ─── CREATE ───────────────────────────────────
+    Router.register('/create', function (root) {
+      window.location.href = 'arena.html';
+    });
+
+    // ─── LOGIN ────────────────────────────────────
+    Router.register('/login', function (root) {
+      var refCode = (window.location.hash.split('?')[1]||'').split('ref=')[1] || null;
+      var h = '<div class="page" style="padding-top:60px">';
+      h += '<div class="text-center mb-4"><p style="font-size:40px">⚽</p><h1 class="mt-2">Вход</h1><p class="text-sm text-muted mt-2">Мок-код: <strong class="accent">123456</strong></p></div>';
+
+      h += '<div id="lp"><label class="label">Телефон</label><input id="l-phone" type="tel" class="input mb-4" placeholder="+7 900 000-00-00" />';
+      h += '<button onclick="lSend()" class="btn btn-primary">Получить код</button></div>';
+
+      h += '<div id="lc" class="hidden"><label class="label">Код из SMS</label><input id="l-code" type="text" inputmode="numeric" class="input mb-4" />';
+      h += '<button onclick="lVerify()" class="btn btn-primary">Войти</button>';
+      h += '<button onclick="document.getElementById(\'lc\').classList.add(\'hidden\');document.getElementById(\'lp\').classList.remove(\'hidden\')" class="btn btn-ghost mt-2 btn-sm">Изменить номер</button></div>';
+
+      h += '<div id="ln" class="hidden"><label class="label">Ник</label><input id="l-nick" type="text" class="input mb-4" placeholder="Дворовый10" />';
+      h += '<button onclick="lReg()" class="btn btn-primary">Создать</button></div>';
+
+      h += '<p id="l-err" class="text-sm text-center mt-4 hidden" style="color:var(--red)"></p></div>';
+      render(h);
+
+      var _p='',_r=refCode;
+      window.lSend=function(){_p=document.getElementById('l-phone').value.replace(/\D/g,'');if(_p.length<10)return;document.getElementById('lp').classList.add('hidden');document.getElementById('lc').classList.remove('hidden');TMA.haptic.selection();};
+      window.lVerify=function(){var c=document.getElementById('l-code').value.trim();if(c!==ZARUBA_MOCK_SMS_CODE){document.getElementById('l-err').textContent='Код: '+ZARUBA_MOCK_SMS_CODE;document.getElementById('l-err').classList.remove('hidden');return;}mockDb.findUserByPhone(_p).then(function(u){if(u){ZarubaSession.set(u.id);Router.navigate('/');return;}document.getElementById('lc').classList.add('hidden');document.getElementById('ln').classList.remove('hidden');});};
+      window.lReg=function(){var n=document.getElementById('l-nick').value.trim();if(n.length<2)return;mockDb.createUser(_p,n,_r).then(function(u){ZarubaSession.set(u.id);TMA.haptic.notification('success');Router.navigate('/');});};
+    });
+
+    // ─── SHOP ─────────────────────────────────────
+    Router.register('/shop', function (root) {
+      ensureUser().then(function (me) {
+        var uid = me ? me.id : null;
+      function renderShop(user) {
+        var h = '<div class="page"><h1 class="mb-4">Магазин</h1>';
+        if (user) {
+          h += '<p class="text-sm text-muted mb-4">Баланс: <strong class="accent">🪙 ' + user.chips + '</strong></p>';
+          ZARUBA_SHOP_ITEMS.forEach(function (item) {
+            var owned = user.purchases.indexOf(item.id) !== -1;
+            var can = !owned && user.chips >= item.price;
+            h += '<div class="card"><div class="flex items-center justify-between"><div><p style="font-weight:700;color:var(--text)">' + item.title + '</p><p class="text-xs text-muted">' + item.description + '</p></div>';
+            h += '<span class="tag tag-accent">🪙 ' + item.price + '</span></div>';
+            if (owned) h += '<p class="text-xs mt-2" style="color:var(--green)">✓ Куплено</p>';
+            else h += '<button onclick="buyItem(\'' + item.id + '\')" class="btn btn-ghost btn-sm mt-2" style="' + (can ? '' : 'opacity:0.4;pointer-events:none') + '">Забрать</button>';
+            h += '</div>';
+          });
+        } else {
+          h += '<div class="card text-center" style="padding:32px"><p class="text-muted">Войди, чтобы тратить</p><a href="#/login" class="btn btn-primary mt-4" style="width:auto;display:inline-flex;padding:0 24px;text-decoration:none">Войти</a></div>';
+        }
+        h += '</div>' + nav('shop');
+        render(h);
+      }
+      if (uid) mockDb.getUser(uid).then(renderShop); else renderShop(null);
+      window.buyItem = function(id) {
+        if (!uid) return;
+        mockDb.purchaseShopItem(uid, id).then(function(){TMA.haptic.notification('success');mockDb.getUser(uid).then(renderShop);}).catch(function(e){if(typeof zarubaToast==='function') zarubaToast(e.message,'info',3000);});
+      };
+      }); // close ensureUser
+    });
+
+    // ─── PROFILE ──────────────────────────────────
+    Router.register('/profile', function (root, qs) {
+      ensureUser().then(function (me) {
+        var uid = qs.id || (me ? me.id : null);
+        if (!uid) { Router.navigate('/'); return; }
+        mockDb.getUser(uid).then(function (u) {
+          if (!u) { render('<div class="page text-center text-muted">Не найден</div>'); return; }
+          var isMe = me && me.id === uid;
+        var prog = zarubaCharismaProgress(u.charismaTotal);
+
+        var h = '<div class="page">';
+        // User card
+        h += '<div class="card text-center" style="padding:24px">';
+        h += '<div style="width:56px;height:56px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:22px;font-weight:800;color:var(--accent)">' + u.nickname.charAt(0) + '</div>';
+        h += '<p style="font-weight:700;font-size:18px;margin-top:12px">' + u.nickname + '</p>';
+        h += '<p class="text-xs text-muted">' + zarubaCharismaStatus(u.charismaTotal) + '</p>';
+        h += '<div class="flex gap-2 justify-between mt-4" style="justify-content:center"><span class="tag tag-accent">🪙 ' + u.chips + '</span><span class="tag tag-green">✨ ' + u.charismaTotal + '</span></div>';
+        h += '</div>';
+
+        // Progress
+        h += '<div class="card"><p class="text-xs text-muted mb-2">До следующего уровня</p>';
+        h += '<div style="height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden"><div style="height:100%;border-radius:3px;background:var(--accent);width:' + Math.min(100, prog.pct) + '%"></div></div>';
+        h += '<p class="text-xs text-muted mt-2">' + Math.round(prog.current) + ' / ' + prog.next + ' XP</p></div>';
+
+        // Referral
+        if (isMe && u.referralCode) {
+          h += '<div class="card"><p style="font-weight:700;color:var(--text)">🤝 Реферальная ссылка</p><p class="text-xs text-muted mt-2">Ты: +50, друг: +75</p>';
+          h += '<div class="flex gap-2 mt-3"><input id="ref-link" class="input" style="flex:1;height:38px;font-size:12px" readonly value="' + location.origin + '/miniapp.html#/login?ref=' + u.referralCode + '" />';
+          h += '<button onclick="copyRef()" class="btn btn-ghost btn-sm" style="width:auto;padding:0 14px">Копировать</button></div>';
+          h += '<p class="text-xs text-muted mt-2">Приглашено: ' + u.referredCount + '</p></div>';
+        }
+
+        // Achievements
+        if (u.achievements.length) {
+          var ACH = {first_zaruba:['🏟','Заруба'],five_wins:['👑','5 побед'],ten_fans:['📣','10 фанатов'],hat_trick:['⚽','Хет-трик'],first_fan:['❤️','Фанат'],first_referral:['🤝','Реферал']};
+          h += '<div class="card"><p class="text-xs text-muted mb-3">Ачивки</p><div class="flex gap-2" style="flex-wrap:wrap">';
+          u.achievements.forEach(function(a){var m=ACH[a]||['⭐',a];h+='<span class="tag tag-muted">'+m[0]+' '+m[1]+'</span>';});
+          h += '</div></div>';
+        }
+
+        if (isMe) h += '<button onclick="doLogout()" class="btn btn-ghost mt-4">Выйти</button>';
+        h += '</div>' + nav('profile');
+        render(h);
+        }); // close getUser
+      }); // close ensureUser
+
+      window.copyRef = function() {
+        var el = document.getElementById('ref-link');
+        if (el) { navigator.clipboard.writeText(el.value).then(function(){TMA.haptic.notification('success');}); }
+      };
+      window.doLogout = function() { ZarubaSession.clear(); Router.navigate('/'); };
+    });
+
+    // ─── JUDGE ────────────────────────────────────
+    Router.register('/judge', function (root, qs) {
+      if (!qs.id) { Router.navigate('/'); return; }
+      ensureUser().then(function (me) {
+        if (!me) { Router.navigate('/'); return; }
+        var uid = me.id;
+
+        mockDb.getZaruba(qs.id).then(function (z) {
+          if (!z || z.refereeId !== uid) { render('<div class="page text-center text-muted">Только судья</div>'); return; }
+
+        var h = '<div class="page">';
+        h += '<div class="text-center"><h1>Судья</h1>';
+        h += '<p class="score mono">' + z.scoreA + ' : ' + z.scoreB + '</p>';
+        h += '<p class="text-xs text-muted">Фолы: ' + z.fouls + '</p></div>';
+
+        if (z.status === 'scheduled') h += '<button onclick="jStart()" class="btn btn-primary mt-4">Начать матч</button>';
+
+        if (z.status === 'live') {
+          h += '<div class="card mt-4"><p style="font-weight:700;margin-bottom:8px">Гол</p>';
+          h += '<div class="flex gap-2 mb-3">';
+          h += '<button onclick="jTeam(this,\'A\')" class="btn btn-ghost btn-sm jt" style="flex:1" data-t="A">Команда А</button>';
+          h += '<button onclick="jTeam(this,\'B\')" class="btn btn-ghost btn-sm jt" style="flex:1" data-t="B">Команда Б</button>';
+          h += '</div>';
+          h += '<button onclick="jGoal()" class="btn btn-primary btn-sm">+1 Гол</button></div>';
+          h += '<button onclick="jFoul()" class="btn btn-ghost mt-2" style="border-color:var(--red);color:var(--red)">Фол</button>';
+          h += '<button onclick="jFinish()" class="btn btn-danger mt-2">Завершить</button>';
+        }
+
+        if (z.status === 'finished') h += '<p class="text-center mt-4" style="color:var(--green);font-weight:700">Завершён</p>';
+        h += '</div>';
+        render(h);
+
+        var _gt = 'A';
+        window.jTeam = function(btn, t) { _gt=t; document.querySelectorAll('.jt').forEach(function(b){b.style.background='';b.style.color='';b.style.borderColor='';}); btn.style.background='var(--accent-soft)'; btn.style.color='var(--accent)'; btn.style.borderColor='var(--accent)'; TMA.haptic.selection(); };
+        window.jStart = function() { mockDb.startLive(z.id, uid).then(function(){TMA.haptic.notification('success');Router.resolve();}); };
+        window.jGoal = function() {
+          var tid = _gt==='A' ? z.teamAId : z.teamBId;
+          if (!tid) return;
+          mockDb.listMembers(tid).then(function(m){var c=m.filter(function(x){return x.confirmed;});if(!c.length)return;mockDb.addGoal({zarubaId:z.id,refereeId:uid,team:_gt,scorerId:c[0].userId}).then(function(){TMA.haptic.notification('success');Router.resolve();});});
+        };
+        window.jFoul = function() { mockDb.addFoul(z.id, uid).then(function(){TMA.haptic.impact('heavy');Router.resolve();}); };
+        window.jFinish = function() { mockDb.finishMatch(z.id, uid).then(function(){TMA.haptic.notification('success');Router.resolve();}); };
+        }); // close getZaruba
+      }); // close ensureUser
+    });
+
+    // ─── START ────────────────────────────────────
+    Router.init('app');
+    } catch(err) {
+      document.getElementById('app').innerHTML = '<div style="padding:20px;color:#f5f5f5;font-family:monospace"><h2 style="color:#f20b88">Ошибка</h2><pre style="white-space:pre-wrap;font-size:12px;margin-top:8px">' + err.message + '</pre></div>';
+    }
+  </script>
+</body>
+</html>
