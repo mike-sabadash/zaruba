@@ -290,20 +290,21 @@
     window.quickCreate = function() {
       ensureUser().then(function(user) {
         if (!user) return;
-        var locs = mockDb.listLocations();
-        if (locs.length === 0) return;
-        var startTime = new Date();
-        startTime.setMinutes(startTime.getMinutes() + 30);
-        var sportMap = { football: 'football_5', basketball: 'basketball_3', volleyball: 'volleyball' };
-        mockDb.createZaruba({
-          sport: sportMap[_selectedSport] || 'football_5',
-          locationId: locs[0].id,
-          startsAt: startTime.toISOString(),
-          description: 'Собирай команду!',
-          organizerId: user.id
-        }).then(function(z) {
-          TMA.haptic.notification('success');
-          Router.navigate('/zaruba?id=' + z.id);
+        mockDb.listLocations().then(function(locs) {
+          if (!locs.length) return;
+          var startTime = new Date();
+          startTime.setMinutes(startTime.getMinutes() + 30);
+          var sportMap = { football: 'football_5', basketball: 'basketball_3', volleyball: 'volleyball' };
+          mockDb.createZaruba({
+            sport: sportMap[_selectedSport] || 'football_5',
+            locationId: locs[0].id,
+            startsAt: startTime.toISOString(),
+            description: 'Собирай команду!',
+            organizerId: user.id
+          }).then(function(z) {
+            TMA.haptic.notification('success');
+            Router.navigate('/zaruba?id=' + z.id);
+          });
         });
       });
     };
@@ -357,21 +358,22 @@
     window.testCreateZaruba = function() {
       ensureUser().then(function(user) {
         if (!user) return;
-        var locs = mockDb.listLocations();
-        if (locs.length === 0) return;
-        var startTime = new Date();
-        startTime.setMinutes(startTime.getMinutes() + 5);
-        mockDb.createZaruba({
-          sport: 'football_5',
-          locationId: locs[0].id,
-          startsAt: startTime.toISOString(),
-          description: 'Тестовая заруба',
-          organizerId: user.id
-        }).then(function() {
-          TMA.haptic.notification('success');
-          if (typeof zarubaToast === 'function') zarubaToast('Заруба создана!', 'win', 2000);
-          document.getElementById('test-menu').classList.remove('open');
-          Router.resolve();
+        mockDb.listLocations().then(function(locs) {
+          if (!locs.length) return;
+          var startTime = new Date();
+          startTime.setMinutes(startTime.getMinutes() + 5);
+          mockDb.createZaruba({
+            sport: 'football_5',
+            locationId: locs[0].id,
+            startsAt: startTime.toISOString(),
+            description: 'Тестовая заруба',
+            organizerId: user.id
+          }).then(function() {
+            TMA.haptic.notification('success');
+            if (typeof zarubaToast === 'function') zarubaToast('Заруба создана!', 'win', 2000);
+            document.getElementById('test-menu').classList.remove('open');
+            Router.resolve();
+          });
         });
       });
     };
