@@ -117,6 +117,48 @@
     .fight-btn:active { transform: scale(0.97); }
 
     .last-match .score-line { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: #fff; letter-spacing: 0.04em; line-height: 1; }
+
+    /* ─── Arena / Create ─────────────────────────── */
+    .arena-title { font-family: 'Batman Forever Alternate Cyr', 'Bebas Neue', sans-serif; font-size: 36px; text-align: center; margin: 16px 0; }
+    .modes { display: flex; justify-content: center; gap: 16px; margin: 16px 0; }
+    .pill { padding: 8px 28px; border-radius: 30px; border: 1px solid #7a7a7a; background: transparent; color: #7a7a7a; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .pill.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(242,11,136,0.3); }
+    .mode-hint { text-align: center; font-size: 12px; color: var(--text-3); margin: 8px 0 16px; }
+
+    .arena-sports { display: flex; justify-content: center; gap: 40px; margin: 16px 0 24px; flex-wrap: wrap; }
+    .arena-sport { text-align: center; cursor: pointer; opacity: 0.35; transition: opacity 0.2s; }
+    .arena-sport.active { opacity: 1; }
+    .arena-sport img { width: 48px; height: 48px; margin-bottom: 8px; }
+    .arena-sport-label { font-size: 12px; color: #ccc; }
+
+    .smart-filters { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+    .filter-tile { position: relative; background: rgba(0,0,0,0.5); border: 1px dashed rgba(122,122,122,0.4); border-radius: 22px; padding: 16px 8px; text-align: center; transition: border 0.2s; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+    .filter-tile.selected { border: 1px dashed rgba(255,255,255,0.6); }
+    .tile-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.9); margin-bottom: 4px; }
+    .tile-value { font-size: 12px; color: #ddd; opacity: 0.8; }
+    .tile-action { position: absolute; top: 10px; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; }
+    .tile-action svg { width: 18px; height: 18px; stroke-width: 3px; fill: none; }
+    .tick { left: 10px; }
+    .tick svg { stroke: #2ecc71; }
+    .cross { right: 10px; }
+    .cross svg { stroke: #aaa; }
+
+    .fast-panel { display: none; max-width: 300px; margin: 0 auto 20px; text-align: center; }
+    .fast-panel.show { display: block; }
+    .fast-geo-btn { background: rgba(0,0,0,0.6); border: 1px dashed rgba(122,122,122,0.4); border-radius: 22px; color: white; padding: 14px 18px; width: 100%; cursor: pointer; font-size: 14px; transition: border 0.2s; margin-bottom: 12px; }
+    .fast-address-block { background: rgba(0,0,0,0.6); border: 1px dashed rgba(122,122,122,0.4); border-radius: 22px; padding: 14px 18px; margin-bottom: 12px; }
+    .fast-address-text { font-size: 12px; color: #ccc; margin-bottom: 6px; }
+    .fast-change-link { color: var(--accent); cursor: pointer; font-size: 12px; text-decoration: underline; }
+
+    .geo-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .geo-overlay.show { display: flex; }
+    .geo-overlay-card { width: 90%; max-width: 800px; height: 80vh; background: #111; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; padding: 16px; }
+    .geo-map { flex: 1; width: 100%; border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
+    .geo-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+    .geo-address-input { flex: 1; padding: 10px; border-radius: 20px; background: #222; border: none; color: white; font-size: 13px; }
+    .geo-confirm, .geo-close { padding: 10px 20px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; color: white; font-size: 13px; }
+    .geo-confirm { background: var(--accent); }
+    .geo-close { background: #111; border: 1px solid #555; }
     .sport-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; padding: 12px 16px; border-radius: 12px; border: 2px solid transparent; transition: all 0.15s; }
     .sport-item.active { border-color: var(--accent); background: var(--accent-soft); }
     .sport-item:not(.active) { opacity: 0.45; }
@@ -579,59 +621,242 @@
       }
     };
 
-    // ─── CREATE ───────────────────────────────────
+    // ─── CREATE (Arena) ────────────────────────────
     Router.register('/create', function (root) {
       ensureUser().then(function (me) {
         if (!me) { Router.navigate('/'); return; }
         var uid = me.id;
+        var _mode = 'fast';
+        var _sport = 'football';
+        var _filterVals = {
+          gender: { current: 'any', display: 'Любой', displayMap: { any: 'Любой', male: 'Парни', female: 'Девушки' } },
+          age: { current: 'any', display: 'Любой' },
+          address: { current: '', display: 'Не задан', coords: null },
+          time: { current: 'weekday_evening', display: 'Сегодня 18:00', dateObj: null }
+        };
+        var _currentCoords = null, _currentAddress = '';
 
-      var h = '<div class="page">';
-      h += '<h1 class="mb-4">Новая заруба</h1>';
+        var h = '<div class="page">';
+        h += '<a href="#/" style="color:var(--text-2);text-decoration:none;font-size:14px;display:block;margin-bottom:12px">← Назад</a>';
+        h += '<h1 class="arena-title">Забить зарубу</h1>';
 
-      h += '<label class="label">Вид спорта</label>';
-      h += '<div class="flex gap-2 mb-4">';
-      h += '<button onclick="setSport(this,\'football_5\')" class="btn btn-ghost btn-sm sport-btn" style="flex:1" data-s="football_5">⚽ Футбол</button>';
-      h += '<button onclick="setSport(this,\'basketball_3\')" class="btn btn-ghost btn-sm sport-btn" style="flex:1" data-s="basketball_3">🏀 Баскет</button>';
-      h += '</div>';
+        // Modes
+        h += '<div class="modes">';
+        h += '<button class="pill ' + (_mode==='fast'?'active':'') + '" onclick="arenaSetMode(\'fast\')">Fast</button>';
+        h += '<button class="pill ' + (_mode==='hard'?'active':'') + '" onclick="arenaSetMode(\'hard\')">Hard</button>';
+        h += '</div>';
+        h += '<div class="mode-hint" id="arena-mode-hint">Fast: определи геолокацию или выбери точку на карте</div>';
 
-      h += '<label class="label">Описание</label>';
-      h += '<textarea id="c-desc" class="textarea mb-4" placeholder="О чём заруба?"></textarea>';
-
-      h += '<label class="label">Когда</label>';
-      h += '<input id="c-dt" type="datetime-local" class="input mb-4" />';
-
-      h += '<label class="label">Площадка</label>';
-      h += '<select id="c-loc" class="input mb-4"></select>';
-
-      h += '<button onclick="doCreate()" class="btn btn-primary mt-4">Создать</button>';
-      h += '</div>' + nav('');
-      render(h);
-
-      var _sport = 'football_5';
-      mockDb.listLocations().then(function(locs){
-        var s=document.getElementById('c-loc');
-        if(s) s.innerHTML='<option value="">Выбери</option>'+locs.map(function(l){return '<option value="'+l.id+'">'+l.name+'</option>';}).join('');
-      });
-
-      window.setSport = function(btn, sport) {
-        _sport = sport;
-        document.querySelectorAll('.sport-btn').forEach(function(b){b.className='btn btn-ghost btn-sm sport-btn';});
-        btn.className='btn btn-ghost btn-sm sport-btn';
-        btn.style.background='var(--accent-soft)';
-        btn.style.color='var(--accent)';
-        btn.style.borderColor='var(--accent)';
-      };
-
-      window.doCreate = function() {
-        var desc = document.getElementById('c-desc').value;
-        var dt = document.getElementById('c-dt').value;
-        var loc = document.getElementById('c-loc').value;
-        if (!loc || !dt) return;
-        mockDb.createZaruba({ sport: _sport, locationId: loc, startsAt: new Date(dt).toISOString(), description: desc, organizerId: uid }).then(function(z) {
-          TMA.haptic.notification('success');
-          Router.navigate('/zaruba?id=' + z.id);
+        // Sports
+        h += '<div class="arena-sports">';
+        var sports = [
+          { id: 'football', icon: 'assets/figma/sport-football.png', label: 'Футбол' },
+          { id: 'streetball', icon: 'assets/figma/sport-basketball.png', label: 'Стритбол' },
+          { id: 'volleyball', icon: 'assets/figma/sport-volleyball.png', label: 'Волейбол' },
+        ];
+        sports.forEach(function (s) {
+          h += '<div class="arena-sport ' + (_sport===s.id?'active':'') + '" onclick="arenaSetSport(\'' + s.id + '\')">';
+          h += '<img src="' + s.icon + '" alt="' + s.label + '" /><div class="arena-sport-label">' + s.label + '</div></div>';
         });
-      };
+        h += '</div>';
+
+        // Hard filters
+        h += '<div id="arena-hard-filters">';
+        h += '<div class="smart-filters">';
+        h += arenaFilterTile('gender', 'Пол', 'Любой');
+        h += arenaFilterTile('age', 'Возраст', 'Любой');
+        h += arenaFilterTile('address', 'Адрес', 'Не задан');
+        h += arenaFilterTile('time', 'Время', 'Сегодня 18:00');
+        h += '</div></div>';
+
+        // Fast panel
+        h += '<div id="arena-fast-panel">';
+        h += '<button class="fast-geo-btn" onclick="arenaShowMap()">📍 Определить геолокацию</button>';
+        h += '<div id="arena-fast-address"></div>';
+        h += '</div>';
+
+        // CTA block
+        h += '<div class="cta-block">';
+        h += '<div class="cta-spray"></div>';
+        h += '<div class="cta-bats"></div>';
+        h += '<div class="cta-rail">';
+        h += '<span class="cta-arrow"></span>';
+        h += '<button class="fight-btn" onclick="arenaFight()">ЗАРУБИТЬСЯ</button>';
+        h += '<span class="cta-arrow right"></span>';
+        h += '</div></div>';
+
+        // Map overlay
+        h += '<div class="geo-overlay" id="geoOverlay">';
+        h += '<div class="geo-overlay-card">';
+        h += '<div id="geoMap" class="geo-map"></div>';
+        h += '<div class="geo-controls">';
+        h += '<input type="text" id="geoAddressInput" class="geo-address-input" placeholder="Выберите точку на карте" readonly />';
+        h += '<button class="geo-confirm" onclick="arenaConfirmGeo()">Выбрать</button>';
+        h += '<button class="geo-close" onclick="arenaHideMap()">Закрыть</button>';
+        h += '</div></div></div>';
+
+        h += '</div>' + nav('');
+        render(h);
+
+        // ─── Arena JS ──────────────────────────────
+        function arenaFilterTile(type, label, def) {
+          return '<div class="filter-tile" id="ft-' + type + '" onclick="arenaCycleFilter(\'' + type + '\')">' +
+            '<div class="tile-action cross" onclick="event.stopPropagation();arenaResetFilter(\'' + type + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>' +
+            '<div class="tile-label">' + label + '</div>' +
+            '<div class="tile-value" id="ftv-' + type + '">' + def + '</div></div>';
+        }
+
+        window.arenaSetMode = function(mode) {
+          _mode = mode;
+          document.querySelectorAll('.modes .pill').forEach(function(b){b.classList.remove('active');});
+          document.querySelector('.modes .pill[data-mode="'+mode+'"]').classList.add('active');
+          document.getElementById('arena-hard-filters').style.display = mode==='hard'?'block':'none';
+          document.getElementById('arena-fast-panel').className = mode==='fast'?'fast-panel show':'fast-panel';
+          document.getElementById('arena-mode-hint').textContent = mode==='fast'?'Fast: определи геолокацию или выбери точку на карте':'Hard: нажми на плитку Адрес, чтобы выбрать место';
+        };
+
+        window.arenaSetSport = function(sport) {
+          _sport = sport;
+          document.querySelectorAll('.arena-sport').forEach(function(s){s.classList.remove('active');});
+          document.querySelector('.arena-sport[data-sport="'+sport+'"]').classList.add('active');
+        };
+        document.querySelectorAll('.arena-sport').forEach(function(s){
+          s.setAttribute('data-sport', s.querySelector('.arena-sport-label').textContent.toLowerCase()==='футбол'?'football':s.querySelector('.arena-sport-label').textContent.toLowerCase().includes('баскет')||s.querySelector('.arena-sport-label').textContent.toLowerCase().includes('стрит')?'streetball':'volleyball');
+        });
+
+        window.arenaCycleFilter = function(type) {
+          if (type === 'gender') {
+            var opts = ['any','male','female'];
+            var idx = opts.indexOf(_filterVals.gender.current);
+            _filterVals.gender.current = opts[(idx+1)%opts.length];
+            _filterVals.gender.display = _filterVals.gender.displayMap[_filterVals.gender.current];
+          } else if (type === 'age') {
+            var opts = ['any','16-22','23-30','31+'];
+            var idx = opts.indexOf(_filterVals.age.current);
+            _filterVals.age.current = opts[(idx+1)%opts.length];
+            _filterVals.age.display = _filterVals.age.current==='any'?'Любой':_filterVals.age.current;
+          } else if (type === 'address') {
+            arenaShowMap();
+            return;
+          } else if (type === 'time') {
+            var picker = document.getElementById('arena-dt-picker');
+            if (picker) picker.showPicker();
+            return;
+          }
+          var el = document.getElementById('ftv-'+type);
+          if (el) el.textContent = _filterVals[type].display;
+          var tile = document.getElementById('ft-'+type);
+          if (tile) tile.classList.toggle('selected', _filterVals[type].current !== 'any' && _filterVals[type].display !== 'Не задан' && _filterVals[type].current !== 'weekday_evening');
+        };
+
+        window.arenaResetFilter = function(type) {
+          if (type === 'gender') { _filterVals.gender.current = 'any'; _filterVals.gender.display = 'Любой'; }
+          else if (type === 'age') { _filterVals.age.current = 'any'; _filterVals.age.display = 'Любой'; }
+          else if (type === 'address') { _filterVals.address.current = ''; _filterVals.address.display = 'Не задан'; _filterVals.address.coords = null; }
+          else if (type === 'time') { _filterVals.time.current = 'weekday_evening'; _filterVals.time.display = 'Сегодня 18:00'; _filterVals.time.dateObj = null; }
+          var el = document.getElementById('ftv-'+type);
+          if (el) el.textContent = _filterVals[type].display;
+          var tile = document.getElementById('ft-'+type);
+          if (tile) tile.classList.remove('selected');
+        };
+
+        window.arenaShowMap = function() {
+          document.getElementById('geoOverlay').classList.add('show');
+        };
+        window.arenaHideMap = function() {
+          document.getElementById('geoOverlay').classList.remove('show');
+        };
+        window.arenaConfirmGeo = function() {
+          if (_currentCoords) {
+            _filterVals.address.current = _currentAddress || (_currentCoords[0].toFixed(5)+', '+_currentCoords[1].toFixed(5));
+            _filterVals.address.display = _filterVals.address.current;
+            _filterVals.address.coords = _currentCoords;
+            var el = document.getElementById('ftv-address');
+            if (el) el.textContent = _filterVals.address.display;
+            var tile = document.getElementById('ft-address');
+            if (tile) tile.classList.add('selected');
+            // Update fast panel
+            var fastAddr = document.getElementById('arena-fast-address');
+            if (fastAddr) fastAddr.innerHTML = '<div class="fast-address-block"><div class="fast-address-text">📍 ' + _filterVals.address.display + '</div></div>';
+          }
+          arenaHideMap();
+        };
+
+        // DateTime picker
+        var dtHtml = '<input type="datetime-local" id="arena-dt-picker" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0" />';
+        document.body.insertAdjacentHTML('beforeend', dtHtml);
+        document.getElementById('arena-dt-picker').addEventListener('change', function() {
+          var val = this.value;
+          if (val) {
+            var d = new Date(val);
+            _filterVals.time.current = 'custom';
+            _filterVals.time.display = d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            _filterVals.time.dateObj = d;
+            var el = document.getElementById('ftv-time');
+            if (el) el.textContent = _filterVals.time.display;
+            var tile = document.getElementById('ft-time');
+            if (tile) tile.classList.add('selected');
+          }
+        });
+
+        // Geolocation
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(pos) {
+            _currentCoords = [pos.coords.latitude, pos.coords.longitude];
+            _currentAddress = _currentCoords[0].toFixed(5) + ', ' + _currentCoords[1].toFixed(5);
+            _filterVals.address.current = _currentAddress;
+            _filterVals.address.display = _currentAddress;
+            _filterVals.address.coords = _currentCoords;
+            var el = document.getElementById('ftv-address');
+            if (el) el.textContent = _currentAddress;
+            var tile = document.getElementById('ft-address');
+            if (tile) tile.classList.add('selected');
+            var fastAddr = document.getElementById('arena-fast-address');
+            if (fastAddr) fastAddr.innerHTML = '<div class="fast-address-block"><div class="fast-address-text">📍 ' + _currentAddress + '</div></div>';
+          }, function(){}, {enableHighAccuracy:true, timeout:8000});
+        }
+
+        // Fight button
+        window.arenaFight = function() {
+          if (_mode === 'fast') {
+            if (!_filterVals.address.coords) {
+              if (typeof zarubaToast === 'function') zarubaToast('Выбери точку на карте', 'info');
+              return;
+            }
+            var startTime = new Date(); startTime.setMinutes(startTime.getMinutes()+30);
+            var sportMap = { football:'football_5', streetball:'basketball_3', volleyball:'volleyball' };
+            mockDb.listLocations().then(function(locs) {
+              var existing = locs.find(function(l){return l.lat&&_filterVals.address.coords&&Math.abs(l.lat-_filterVals.address.coords[0])<0.001&&Math.abs(l.lng-_filterVals.address.coords[1])<0.001;});
+              if (existing) return Promise.resolve(existing.id);
+              return mockDb.addLocation({name:'Fast точка',lat:_filterVals.address.coords[0],lng:_filterVals.address.coords[1],address:_filterVals.address.display}).then(function(l){return l.id;});
+            }).then(function(locId) {
+              return mockDb.createZaruba({sport:sportMap[_sport]||'football_5',locationId:locId,startsAt:startTime.toISOString(),description:'Fast-заруба',organizerId:uid});
+            }).then(function(z) {
+              TMA.haptic.notification('success');
+              Router.navigate('/zaruba?id='+z.id);
+            });
+          } else {
+            if (!_filterVals.address.coords && _filterVals.address.display === 'Не задан') {
+              if (typeof zarubaToast === 'function') zarubaToast('Укажи адрес', 'info');
+              return;
+            }
+            var startHard = new Date();
+            if (_filterVals.time.current === 'weekday_evening') startHard.setHours(18,0,0,0);
+            else if (_filterVals.time.current === 'custom' && _filterVals.time.dateObj) startHard = _filterVals.time.dateObj;
+            var sportMap = { football:'football_5', streetball:'basketball_3', volleyball:'volleyball' };
+            var coords = _filterVals.address.coords || [55.75,37.57];
+            mockDb.listLocations().then(function(locs) {
+              var existing = locs.find(function(l){return Math.abs(l.lat-coords[0])<0.001&&Math.abs(l.lng-coords[1])<0.001;});
+              if (existing) return Promise.resolve(existing.id);
+              return mockDb.addLocation({name:_filterVals.address.display,lat:coords[0],lng:coords[1],address:_filterVals.address.display}).then(function(l){return l.id;});
+            }).then(function(locId) {
+              return mockDb.createZaruba({sport:sportMap[_sport]||'football_5',locationId:locId,startsAt:startHard.toISOString(),description:_filterVals.address.display.split(',')[0]+', '+_filterVals.age.display+', '+_filterVals.gender.display,organizerId:uid});
+            }).then(function(z) {
+              TMA.haptic.notification('success');
+              Router.navigate('/zaruba?id='+z.id);
+            });
+          }
+        };
       }); // close ensureUser
     });
 
