@@ -100,7 +100,23 @@
     .hidden { display: none !important; }
 
     /* ─── Home Screen ─────────────────────────────── */
-    .sport-grid { display: flex; justify-content: center; gap: 20px; margin: 16px 0; }
+    .sport-grid { display: flex; justify-content: center; gap: 24px; margin: 20px 0; flex-wrap: wrap; }
+    .sport-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 16px 20px; border-radius: 22px; border: 1px dashed rgba(122,122,122,0.4); background: rgba(0,0,0,0.5); transition: all 0.2s; min-width: 90px; }
+    .sport-item.active { border: 1px dashed rgba(255,255,255,0.6); background: rgba(242,11,136,0.08); }
+    .sport-item:not(.active) { opacity: 0.5; }
+    .sport-item img { width: 44px; height: 44px; }
+    .sport-item span { font-size: 12px; font-weight: 500; color: #ccc; }
+
+    .cta-block { position: relative; width: 100%; max-width: 340px; min-height: 180px; margin: 24px auto 16px; text-align: center; }
+    .cta-spray { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: min(320px, 100%); aspect-ratio: 359/239; opacity: 0.4; background: url("assets/local/cta-spray.png") center/cover no-repeat; mix-blend-mode: screen; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 48%, rgba(0,0,0,0) 84%); -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 48%, rgba(0,0,0,0) 84%); pointer-events: none; }
+    .cta-bats { position: absolute; left: 50%; top: 25%; transform: translate(-50%, -50%); width: 72px; height: 72px; background: url("assets/local/icon-bats.png") center/contain no-repeat; pointer-events: none; }
+    .cta-rail { position: relative; display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 80px; z-index: 2; }
+    .cta-arrow { flex: 0 0 60px; height: 6px; background: url("assets/local/arrow-left.png") center/contain no-repeat; opacity: 0.7; }
+    .cta-arrow.right { transform: scaleX(-1); }
+    .fight-btn { flex: 0 0 auto; width: 220px; height: 52px; border-radius: 4px; border: 1px solid var(--accent); background: var(--accent); color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.04em; cursor: pointer; transition: all 0.18s ease; }
+    .fight-btn:active { transform: scale(0.97); }
+
+    .last-match .score-line { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: #fff; letter-spacing: 0.04em; line-height: 1; }
     .sport-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; padding: 12px 16px; border-radius: 12px; border: 2px solid transparent; transition: all 0.15s; }
     .sport-item.active { border-color: var(--accent); background: var(--accent-soft); }
     .sport-item:not(.active) { opacity: 0.45; }
@@ -203,9 +219,9 @@
 
           var h = '<div class="page">';
 
-          // Header: logo left, chips right
-          h += '<div class="flex items-center justify-between">';
-          h += '<div id="logo-area" style="cursor:pointer;padding:4px 8px;border-radius:8px"><span class="font-display" style="font-size:20px;color:var(--accent)">ZARUBA</span></div>';
+          // Header: logo image + chips
+          h += '<div class="flex items-center justify-between" style="align-items:center">';
+          h += '<div id="logo-area" style="cursor:pointer;width:120px;height:40px;background:url(assets/local/logo-full.png) center/contain no-repeat"></div>';
           h += '<span class="tag tag-accent">🪙 ' + (user ? user.chips : 0) + ' чипсеков</span>';
           h += '</div>';
 
@@ -233,39 +249,44 @@
             });
           }
 
-          // Heading
-          h += '<p style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;letter-spacing:0.02em;color:var(--text-2);text-align:center;margin:12px 0">Выбери во что зарубиться</p>';
+          // Title
+          h += '<p style="font-family:\'Batman Forever Alternate Cyr\',\'Bebas Neue\',sans-serif;font-size:28px;text-align:center;color:var(--text);margin:12px 0 8px">Выбери во что зарубиться</p>';
 
-          // Sport picker
+          // Sport picker with images
           h += '<div class="sport-grid">';
           var sports = [
-            { id: 'football', icon: '⚽', label: 'Футбол' },
-            { id: 'basketball', icon: '🏀', label: 'Баскет' },
-            { id: 'volleyball', icon: '🏐', label: 'Волейбол' },
+            { id: 'football', icon: 'assets/figma/sport-football.png', label: 'Футбол' },
+            { id: 'basketball', icon: 'assets/figma/sport-basketball.png', label: 'Баскет' },
+            { id: 'volleyball', icon: 'assets/figma/sport-volleyball.png', label: 'Волейбол' },
           ];
           sports.forEach(function (s) {
             h += '<div class="sport-item ' + (_selectedSport === s.id ? 'active' : '') + '" onclick="selectSport(\'' + s.id + '\')">';
-            h += '<span>' + s.icon + '</span><span>' + s.label + '</span></div>';
+            h += '<img src="' + s.icon + '" alt="' + s.label + '" /><span>' + s.label + '</span></div>';
           });
           h += '</div>';
 
-          // CTA
-          h += '<button onclick="quickCreate()" class="cta-main">ЗАБИТЬ ЗАРУБУ</button>';
+          // CTA block with spray background
+          h += '<div class="cta-block">';
+          h += '<div class="cta-spray"></div>';
+          h += '<div class="cta-bats"></div>';
+          h += '<div class="cta-rail">';
+          h += '<span class="cta-arrow"></span>';
+          h += '<button onclick="quickCreate()" class="fight-btn">ЗАБИТЬ ЗАРУБУ</button>';
+          h += '<span class="cta-arrow right"></span>';
+          h += '</div></div>';
 
-          // Invite
-          h += '<button onclick="inviteFriend()" class="btn btn-ghost mt-3" style="font-size:13px;gap:6px">📤 Пригласить друга</button>';
+          // Invite (with spacing)
+          h += '<div style="text-align:center;margin-top:16px"><button onclick="inviteFriend()" class="btn btn-ghost" style="display:inline-flex;font-size:13px;gap:6px;height:40px">📤 Пригласить друга</button></div>';
 
           // Last match
           if (lastFinished) {
-            var winSide = lastFinished.scoreA > lastFinished.scoreB ? 'A' : lastFinished.scoreB > lastFinished.scoreA ? 'B' : null;
             h += '<div class="last-match">';
             h += '<p class="last-match-header">Последний матч</p>';
-            h += '<a href="#/zaruba?id=' + lastFinished.id + '" class="card flex items-center justify-between" style="text-decoration:none">';
+            h += '<a href="#/zaruba?id=' + lastFinished.id + '" class="card" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between">';
             h += '<div><p style="font-weight:700;color:var(--text)">' + locN(lastFinished.locationId) + '</p>';
             h += '<p class="text-xs text-muted">' + zarubaFormatDateTime(lastFinished.startsAt) + '</p></div>';
-            h += '<div style="text-align:right"><span class="font-display" style="font-size:24px">' + lastFinished.scoreA + ' : ' + lastFinished.scoreB + '</span>';
-            if (winSide) h += '<p class="text-xs" style="color:var(--accent)">🏆 Победа</p>';
-            h += '</div></a></div>';
+            h += '<span class="score-line">' + lastFinished.scoreA + ' : ' + lastFinished.scoreB + '</span>';
+            h += '</a></div>';
           }
 
           // Upcoming
